@@ -55,7 +55,7 @@ Last updated: 2026-11-03 (Asia/Kolkata)
 2. Review migration details against the product requirements and run realistic authenticated-user tests (including two users in different groups) before launch. Catalog checks verify RLS is enabled, not every policy's behavior.
 3. Install dependencies / run lint, `npm test`, and a production build in an environment with Node/npm, then fix any issues. The attendance-engine tests already passed independently; the website bundle remains unbuilt.
 4. Push this handoff and latest code/environment-name changes to GitHub. Record the resulting commit SHA below.
-5. Produce the requested hosting ZIP from the complete source, excluding `.env.local`, `node_modules`, `.next`, and credentials. Include setup instructions and the migration.
+5. Created `attendly-app/Attendly-hosting-package.zip`. Archive inspection found 23 entries, including the README, handoff, and migration; `.env.local`, `node_modules`, `.next`, and credentials are excluded. This is a website foundation package, not a verified production build.
 6. Deployment has not been attempted; no hosting integration is connected. Do not describe the current partial website as production-ready.
 
 ## Latest push log

@@ -22,14 +22,19 @@ Last updated: 2026-11-03 (Asia/Kolkata)
 
 ## External service status
 
-- Created the public repository [`sharveshraam/Attendly`](https://github.com/sharveshraam/Attendly) after the user selected `sharveshraam` and public visibility. First commit `3028654b3152af4d41f61a5af00ba90b445d8ff2` currently contains only the starter README; the complete reviewed source tree still needs to be pushed.
-- User confirmed they already have a Supabase project. The Supabase project-listing tools returned `Unknown tool` and the Supabase namespace was subsequently removed from available tools. No project ID, URL, or key was retrieved, and no database migration was applied remotely.
+- Created the public repository [`sharveshraam/Attendly`](https://github.com/sharveshraam/Attendly). The full 21-file project tree is on `main`; commit [`a74fdff`](https://github.com/sharveshraam/Attendly/commit/a74fdff497937134c754ca2bca3057c053754292) contains the dashboard and migration changes. GitHub's commit view verified 20 changed file paths; the original README from the initial commit is unchanged.
+- Initial connected organization check showed zero projects. After the user directed and confirmed creation, a new project was created in `Sharvesh Ram` (Free plan), with Data API enabled, automatic table exposure disabled, and automatic RLS enabled. See the verified project details immediately below. No migration has been applied remotely yet.
+- User confirmed the final Supabase create action. Project creation succeeded; project ID is `gavlxbxgxdormbfhtzlo`, dashboard URL is `https://supabase.com/dashboard/project/gavlxbxgxdormbfhtzlo`, region is Mumbai, and the dashboard is still initializing. The generated database password is retained only by Supabase and is intentionally not copied into chat, the repo, or this handoff. Next retrieve the project API URL and publishable key from Project Settings; record the URL and public key only in an ignored local `.env.local` (or other private local configuration), not this public repository. Never retrieve or record the service-role key unless an actual server-only integration requires it.
+- The project is Healthy and the API URL is `https://gavlxbxgxdormbfhtzlo.supabase.co`. The Supabase publishable key (`sb_publishable_…`) is saved with that URL in ignored local `.env.local`; do not copy it into this public progress file or commit it. No service-role key has been retrieved. Project is empty and no migration has been applied yet.
+- Added a deterministic attendance engine (`lib/attendance-engine.js`) and six Node built-in unit cases in `tests/attendance-engine.test.js`; wired `npm test` to `node --test`. All six cases passed with Node's built-in test runner through the available JavaScript runtime. The `npm test` script and Next.js production build remain unrun because Windows reports `npm` is unavailable.
+- Tightened shared-event RLS so group events must belong to the group's semester; members can create/update their own unverified/proposed changes while group owners/admins can confirm or reject them. Added Realtime publication membership for shared calendar, private attendance, group membership/polls, and user notifications. Updated README and feature-status documentation to clearly distinguish implemented work from the roadmap.
+- Supabase migration is still unapplied. The project dashboard is healthy, but loading the full migration into the SQL Editor through the browser stalled before any query text appeared. No SQL was run and no schema changes have been made to Supabase yet.
 - Vercel account/authorization is not connected or checked. No deployment has been attempted.
 - `npm install` could not run because `npm` is not installed/available in this environment. Consequently no lockfile, build, or automated verification has been produced yet. Do not claim a successful build.
 
 ## Important security review findings
 
-- Fixed in `supabase/migrations/0001_attendly_core.sql`: group-membership helper functions now use narrow `SECURITY DEFINER` lookups with an empty fixed search path to avoid recursive RLS evaluation; group creators become owners automatically; invite joining is via authenticated `join_group_by_invite(text)` and inserts only the `member` role; direct member self-enrollment policy was removed.
+- Fixed in `supabase/migrations/0001_attendly_core.sql`: group-membership helper functions now use narrow `SECURITY DEFINER` lookups with an empty fixed search path to avoid recursive RLS evaluation; group creators become owners automatically; invite joining is via authenticated `join_group_by_invite(text)` and inserts only the `member` role; direct member self-enrollment policy was removed; group admins can add members but cannot assign elevated roles; owners can promote/demote members through a restricted RPC; private Storage bucket policies were added; assignment/resource writes are tied to owned semester/course records.
 - Before applying the migration, continue reviewing all RLS policies, storage setup, and relationship checks. In particular, verify group role lifecycle, storage bucket policies, group calendar approvals, and assignment/course ownership constraints.
 - The private attendance table is separate from shared calendar data and its policies remain owner-only.
 
@@ -38,9 +43,12 @@ Last updated: 2026-11-03 (Asia/Kolkata)
 1. Finish security review and correct the migration; add private Storage bucket policies and document a safe first-time setup path.
 2. Continue building the website: real semester/course setup, calendar and attendance flows, assignment planner, account recovery/logout, settings, and trustworthy empty/loading/error states. Avoid fake success actions or placeholder data.
 3. Add deterministic attendance/semester/calendar logic and requested tests. Run tests/build when Node/npm becomes available; record exact outcomes here.
-4. Obtain access to the user's existing Supabase project through the Supabase connector or browser session, inspect it before changes, apply migrations, and record the resulting project ID (never secret keys).
-5. Push all reviewed project files including this progress file to `sharveshraam/Attendly`, then verify the resulting repository tree and record its commit SHA.
-6. Prepare the final hosting ZIP and deployment configuration; deploy only when required account access is available.
+4. `.env.local` contains the verified Supabase URL and publishable key. Inspect project state, apply the reviewed SQL migration to this new empty project, and verify table RLS and private Storage policies.
+5. Apply and verify the migration on the empty Supabase project, then test auth, RLS isolation, and Realtime. Avoid running SQL until the whole script is present and reviewed in the editor.
+6. Continue website features and create real screens/flows; don't leave navigation as informational notices where a real action is expected.
+7. Add deterministic semester/calendar logic and requested tests. Run tests/build when Next/npm is available; record exact outcomes here.
+8. Push later security and website updates, including this progress file, to `sharveshraam/Attendly`; verify and record each commit.
+9. Prepare the final hosting ZIP and deployment configuration; deploy only when required account access is available.
 
 ## Handoff rules
 

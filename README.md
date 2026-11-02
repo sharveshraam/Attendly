@@ -8,17 +8,14 @@ Attendly is a responsive academic companion starter built with Next.js, TypeScri
 - **Backend:** Supabase (Postgres, Auth, Storage, Realtime)
 - **Why:** Supabase removes the need to operate a separate API/database server for the core product. Vercel is a natural fit for Next.js.
 
-## Supabase-first setup
+## Supabase setup
 
-1. Create a Supabase project in your account.
-2. Open **SQL Editor** in the Supabase dashboard.
-3. Run `supabase/migrations/0001_attendly_core.sql`.
-4. In **Project Settings → API**, copy the Project URL and publishable/anon key.
-5. Copy `.env.example` to `.env.local` and fill in `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_ANON_KEY`.
-6. In Supabase Auth settings, configure the site URL and allowed redirect URLs for localhost and your eventual Vercel domain.
-7. Create a private Storage bucket named `academic-documents`. Add policies restricting each user's folder to their own auth UID before enabling uploads.
+The Attendly project has been created in Supabase in the Mumbai region. Its project reference and dashboard link are recorded in `ATTENDLY_PROGRESS.md`. The publishable key and API URL belong in `.env.local`, which is ignored by Git. Never put a service-role key or database password in client code or this public repository.
 
-**Important:** This package cannot create a Supabase cloud project inside your account without an authorized Supabase connection. Never share your account password or service-role key in chat. The service-role key must remain server-only.
+1. Copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_SUPABASE_URL` plus `NEXT_PUBLIC_SUPABASE_ANON_KEY` to the project's API URL and publishable key. The existing local workspace already has these values in its ignored `.env.local`.
+2. Apply `supabase/migrations/0001_attendly_core.sql` once in the project's SQL Editor or through the Supabase CLI. It creates the core schema, RLS policies, private `academic-documents` bucket, membership RPCs, and Realtime publication entries.
+3. In Supabase Auth settings, set the local site URL to `http://localhost:3000` and add local plus production callback URLs before enabling sign-in on a hosted domain.
+4. Confirm every exposed table has RLS enabled and test a second user cannot read personal attendance or documents before adding real student data.
 
 ## Run locally
 
@@ -53,9 +50,9 @@ The database foundation includes:
 - Assignments, course resources and semester snapshots
 - Notification preferences, notification inbox and push subscriptions
 
-The roadmap also includes calendar imports/exports, drag-and-drop scheduling, schedule conflict detection, AI document comparison, what-if simulation, attendance forecasting/recovery planning, analytics/heatmaps, PWA/offline support, push delivery, command palette, backups and multi-semester reporting.
+Implemented in the current website: a Supabase-aware overview, responsive dashboard navigation, explicit setup states, and deterministic attendance calculations with unit cases. Calendar import, document extraction, group approval UI, PWA/offline work, reports, AI, notifications, and most scheduling/productivity screens remain future work.
 
-This initial package is a foundation, not a claim that every roadmap feature is already implemented. The complete production system still needs the remaining application screens, server-side workflows, storage policies, push delivery service, document extraction pipeline, tests and deployment verification.
+See `ATTENDLY_PROGRESS.md` for current status and next steps. This project is not yet a complete production application.
 
 ## Security model
 

@@ -280,6 +280,39 @@ $$;
 revoke all on function public.join_group_by_invite(text) from public;
 grant execute on function public.join_group_by_invite(text) to authenticated;
 
+-- Only a current group owner may promote or demote an existing member.
+-- Ownership itself cannot be reassigned through this function.
+create or replace function public.set_group_member_role(
+  target_group uuid,
+  target_user uuid,
+  target_role public.group_role
+)
+returns void language plpgsql security definer set search_path = ''
+as $$
+begin
+  if not exists (
+    select 1 from public.group_members gm
+    where gm.group_id = target_group
+      and gm.user_id = (select auth.uid())
+      and gm.role = 'owner'
+  ) then
+    raise exception 'Only a group owner can change member roles';
+  end if;
+  if target_role not in ('admin', 'member') then
+    raise exception 'The owner role cannot be assigned through this function';
+  end if;
+  update public.group_members
+  set role = target_role
+  where group_id = target_group and user_id = target_user and role <> 'owner';
+  if not found then
+    raise exception 'Member not found or is the group owner';
+  end if;
+end;
+$$;
+
+revoke all on function public.set_group_member_role(uuid, uuid, public.group_role) from public;
+grant execute on function public.set_group_member_role(uuid, uuid, public.group_role) to authenticated;
+
 -- Enable RLS on every exposed table.
 alter table public.profiles enable row level security;
 alter table public.groups enable row level security;
@@ -312,7 +345,7 @@ create policy "group admins update" on public.groups for update to authenticated
 create policy "group owner delete" on public.groups for delete to authenticated using(created_by=(select auth.uid()));
 
 create policy "members view memberships" on public.group_members for select to authenticated using(public.is_group_member(group_id) or user_id=(select auth.uid()));
-create policy "group admins add members" on public.group_members for insert to authenticated with check(public.can_manage_group(group_id));
+create policy "group admins add members" on public.group_members for insert to authenticated with check(public.can_manage_group(group_id) and role='member');
 create policy "admins manage memberships" on public.group_members for delete to authenticated using(public.can_manage_group(group_id) or user_id=(select auth.uid()));
 
 create policy "semester owner or group member read" on public.semesters for select to authenticated using(owner_id=(select auth.uid()) or (group_id is not null and public.is_group_member(group_id)));
@@ -328,11 +361,46 @@ create policy "rules owner write" on public.timetable_rules for all to authentic
 create policy "academic days read" on public.academic_days for select to authenticated using(exists(select 1 from public.semesters s where s.id=semester_id and (s.owner_id=(select auth.uid()) or (s.group_id is not null and public.is_group_member(s.group_id)))));
 create policy "academic days owner write" on public.academic_days for all to authenticated using(exists(select 1 from public.semesters s where s.id=semester_id and s.owner_id=(select auth.uid()))) with check(exists(select 1 from public.semesters s where s.id=semester_id and s.owner_id=(select auth.uid())));
 
--- Shared events readable by group members; personal attendance is separately owner-scoped.
-create policy "events visible to owner or group" on public.calendar_events for select to authenticated using(exists(select 1 from public.semesters s where s.id=semester_id and (s.owner_id=(select auth.uid()) or (calendar_events.group_id is not null and public.is_group_member(calendar_events.group_id)))));
-create policy "event creator or group admin can add" on public.calendar_events for insert to authenticated with check(created_by=(select auth.uid()) and (group_id is null or public.can_manage_group(group_id) or public.is_group_member(group_id)));
-create policy "group members can edit shared events" on public.calendar_events for update to authenticated using((group_id is not null and public.is_group_member(group_id)) or created_by=(select auth.uid())) with check((group_id is not null and public.is_group_member(group_id)) or created_by=(select auth.uid()));
-create policy "event creator or group admin delete" on public.calendar_events for delete to authenticated using(created_by=(select auth.uid()) or (group_id is not null and public.can_manage_group(group_id)));
+-- Group events must belong to that group's semester. Members can propose
+-- changes, while owners/admins can confirm and edit shared schedule events.
+create policy "events visible to owner or group" on public.calendar_events for select to authenticated using(
+  exists(select 1 from public.semesters s where s.id=calendar_events.semester_id and s.owner_id=(select auth.uid()))
+  or (calendar_events.group_id is not null
+      and public.is_group_member(calendar_events.group_id)
+      and exists(select 1 from public.semesters s where s.id=calendar_events.semester_id and s.group_id=calendar_events.group_id))
+);
+create policy "event creator or group admin can add" on public.calendar_events for insert to authenticated with check(
+  created_by=(select auth.uid()) and exists(
+    select 1 from public.semesters s where s.id=calendar_events.semester_id and (
+      (calendar_events.group_id is null and s.owner_id=(select auth.uid()))
+      or (calendar_events.group_id is not null and s.group_id=calendar_events.group_id
+          and public.is_group_member(calendar_events.group_id)
+          and (public.can_manage_group(calendar_events.group_id) or verification_status='proposed'))
+    )
+  )
+);
+create policy "group members propose event updates" on public.calendar_events for update to authenticated
+using(
+  (group_id is null and created_by=(select auth.uid())
+   and exists(select 1 from public.semesters s where s.id=calendar_events.semester_id and s.owner_id=(select auth.uid())))
+  or (group_id is not null and public.is_group_member(group_id)
+      and exists(select 1 from public.semesters s where s.id=calendar_events.semester_id and s.group_id=calendar_events.group_id)
+      and (public.can_manage_group(group_id) or (created_by=(select auth.uid()) and verification_status in ('unverified','proposed'))))
+)
+with check(
+  (group_id is null and created_by=(select auth.uid())
+   and exists(select 1 from public.semesters s where s.id=calendar_events.semester_id and s.owner_id=(select auth.uid())))
+  or (group_id is not null and public.is_group_member(group_id)
+      and exists(select 1 from public.semesters s where s.id=calendar_events.semester_id and s.group_id=calendar_events.group_id)
+      and ((public.can_manage_group(group_id) and verification_status in ('unverified','proposed','confirmed','rejected'))
+           or (created_by=(select auth.uid()) and verification_status in ('unverified','proposed'))))
+);
+create policy "event creator or group admin delete" on public.calendar_events for delete to authenticated using(
+  (group_id is null and created_by=(select auth.uid())
+   and exists(select 1 from public.semesters s where s.id=calendar_events.semester_id and s.owner_id=(select auth.uid())))
+  or (group_id is not null and public.can_manage_group(group_id)
+      and exists(select 1 from public.semesters s where s.id=calendar_events.semester_id and s.group_id=calendar_events.group_id))
+);
 
 create policy "attendance private select" on public.attendance_records for select to authenticated using(user_id=(select auth.uid()));
 create policy "attendance private insert" on public.attendance_records for insert to authenticated with check(user_id=(select auth.uid()) and exists(select 1 from public.calendar_events e where e.id=event_id));
@@ -342,8 +410,12 @@ create policy "attendance private delete" on public.attendance_records for delet
 create policy "uploads private all" on public.document_uploads for all to authenticated using(owner_id=(select auth.uid())) with check(owner_id=(select auth.uid()));
 create policy "change log group read" on public.schedule_change_log for select to authenticated using(exists(select 1 from public.semesters s where s.id=semester_id and (s.owner_id=(select auth.uid()) or (s.group_id is not null and public.is_group_member(s.group_id)))));
 create policy "change log actor insert" on public.schedule_change_log for insert to authenticated with check(actor_id=(select auth.uid()));
-create policy "assignments owner all" on public.assignments for all to authenticated using(owner_id=(select auth.uid())) with check(owner_id=(select auth.uid()));
-create policy "resources owner all" on public.course_resources for all to authenticated using(owner_id=(select auth.uid())) with check(owner_id=(select auth.uid()));
+create policy "assignments owner all" on public.assignments for all to authenticated
+using(owner_id=(select auth.uid()))
+with check(owner_id=(select auth.uid()) and exists(select 1 from public.semesters s where s.id=semester_id and s.owner_id=(select auth.uid())) and (course_id is null or exists(select 1 from public.courses c where c.id=course_id and c.semester_id=assignments.semester_id)));
+create policy "resources owner all" on public.course_resources for all to authenticated
+using(owner_id=(select auth.uid()))
+with check(owner_id=(select auth.uid()) and exists(select 1 from public.courses c join public.semesters s on s.id=c.semester_id where c.id=course_id and s.owner_id=(select auth.uid())));
 create policy "notification preferences self" on public.notification_preferences for all to authenticated using(user_id=(select auth.uid())) with check(user_id=(select auth.uid()));
 create policy "notifications self" on public.notifications for all to authenticated using(user_id=(select auth.uid())) with check(user_id=(select auth.uid()));
 create policy "poll members read" on public.calendar_polls for select to authenticated using(public.is_group_member(group_id));
@@ -353,6 +425,37 @@ create policy "poll vote private" on public.calendar_poll_votes for all to authe
 create policy "push subscriptions private" on public.push_subscriptions for all to authenticated using(user_id=(select auth.uid())) with check(user_id=(select auth.uid()));
 create policy "snapshots owner read" on public.semester_snapshots for select to authenticated using(created_by=(select auth.uid()));
 create policy "snapshots owner write" on public.semester_snapshots for all to authenticated using(created_by=(select auth.uid())) with check(created_by=(select auth.uid()));
+
+-- Documents are stored in a private bucket under a first-level folder equal to
+-- the owning auth UID: <uid>/<generated-object-name>.
+insert into storage.buckets(id, name, public)
+values ('academic-documents', 'academic-documents', false)
+on conflict (id) do update set public = false;
+
+create policy "academic docs owner select" on storage.objects for select to authenticated
+using(bucket_id='academic-documents' and (storage.foldername(name))[1]=(select auth.uid())::text);
+create policy "academic docs owner insert" on storage.objects for insert to authenticated
+with check(bucket_id='academic-documents' and (storage.foldername(name))[1]=(select auth.uid())::text);
+create policy "academic docs owner update" on storage.objects for update to authenticated
+using(bucket_id='academic-documents' and (storage.foldername(name))[1]=(select auth.uid())::text)
+with check(bucket_id='academic-documents' and (storage.foldername(name))[1]=(select auth.uid())::text);
+create policy "academic docs owner delete" on storage.objects for delete to authenticated
+using(bucket_id='academic-documents' and (storage.foldername(name))[1]=(select auth.uid())::text);
+
+-- Publish only tables that the app subscribes to. Realtime evaluates their
+-- SELECT RLS policies for each user's subscription.
+do $$
+declare table_name text;
+begin
+  if not exists(select 1 from pg_publication where pubname='supabase_realtime') then
+    raise exception 'Supabase Realtime publication is missing';
+  end if;
+  foreach table_name in array array['calendar_events','attendance_records','group_members','calendar_polls','calendar_poll_votes','notifications'] loop
+    if not exists(select 1 from pg_publication_tables where pubname='supabase_realtime' and schemaname='public' and tablename=table_name) then
+      execute format('alter publication supabase_realtime add table public.%I', table_name);
+    end if;
+  end loop;
+end $$;
 
 -- Create a profile automatically when an auth user signs up.
 create or replace function public.handle_new_user()

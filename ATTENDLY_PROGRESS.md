@@ -17,7 +17,7 @@ Last updated: 2026-11-03 (Asia/Kolkata)
 
 - Public repository: [sharveshraam/Attendly](https://github.com/sharveshraam/Attendly)
 - Default branch: `main`.
-- Most recent previously verified project push: [`40569d0`](https://github.com/sharveshraam/Attendly/commit/40569d080bc2d9df6aa8fb03de4ae81f3ee43cb9). This handoff and the latest Supabase environment-variable compatibility update are being pushed now; update this entry with the new commit SHA after the push.
+- Supabase key-variable support was pushed in [`7045bd6`](https://github.com/sharveshraam/Attendly/commit/7045bd6651cf171e0cc8e61e4e9bbf9a0724cf65). This handoff was then published to `main`; the current file history on GitHub is the canonical record for the handoff commit.
 - `.env.local` is ignored and excluded from repository commits and the hosting ZIP. Never check in the publishable key, database password, service-role secret, or other private credential.
 
 ### Supabase project
@@ -60,7 +60,7 @@ Last updated: 2026-11-03 (Asia/Kolkata)
 
 ## Latest push log
 
-- Pending at this update: push of the corrected handoff plus Supabase publishable-key variable support. Add commit SHA and verification result after push.
+- 2026-11-03: pushed the publishable-key environment variable example and client/server Supabase helper wiring; confirmed Supabase migration status and security service checks; then pushed this corrected handoff. See the linked code checkpoint above and the current file revision for the handoff update.
 
 ## Handoff rules
 

@@ -1,60 +1,72 @@
-# Attendly — build progress and handoff
+# Attendly — build progress and next-agent handoff
 
 Last updated: 2026-11-03 (Asia/Kolkata)
 
 ## User direction
 
 - Build the website first; mobile app work comes later.
-- Use the supplied Attendly master prompt and `Attendly-Project-Starter.zip` as the product brief and starting point.
-- Create a new **public** GitHub repository in the `sharveshraam` account, then push the completed project.
-- Use the user's existing Supabase project. Do not ask for passwords or expose service-role keys.
-- Keep this file current so another agent can continue if this run ends early.
-- The project's synced `sources/` directory is reference-only; do not modify it.
+- Use `MASTER_BUILD_PROMPT.md` and the supplied starter ZIP as the brief and base.
+- Publish the project in a new public GitHub repository under `sharveshraam`.
+- Finish the Supabase foundation and connect the applicable website code.
+- Keep this handoff current and push it with each meaningful milestone so another agent can continue.
+- The synced project `sources/` directory is read-only. It has not been edited.
 
-## Current state
+## Current verified state
 
-- The starter archive was extracted to `attendly-app/attendly/`; original archive and synced `sources/` were left untouched.
-- Starter: Next.js App Router, TypeScript, Tailwind, Supabase SSR auth helpers, and one initial SQL migration.
-- Replaced the placeholder dashboard with a responsive Attendly workspace overview. It reads the latest semester, course count, upcoming scheduled class count, and the signed-in user's confirmed attendance marks through Supabase; empty states are explicit and do not invent attendance data.
-- Added polished navigation, responsive sidebar, overview cards, privacy messaging, search dialog, getting-started steps, and mobile layout.
-- Updated the core migration to avoid recursive group-membership RLS checks, make group creators owners, add a safe invite-code join RPC, and prevent users from assigning themselves elevated group roles.
-- Authentication pages remain from the starter (email/password login and signup). The dashboard is usable as an empty state without backend credentials.
+### GitHub
 
-## External service status
+- Public repository: [sharveshraam/Attendly](https://github.com/sharveshraam/Attendly)
+- Default branch: `main`.
+- Most recent previously verified project push: [`40569d0`](https://github.com/sharveshraam/Attendly/commit/40569d080bc2d9df6aa8fb03de4ae81f3ee43cb9). This handoff and the latest Supabase environment-variable compatibility update are being pushed now; update this entry with the new commit SHA after the push.
+- `.env.local` is ignored and excluded from repository commits and the hosting ZIP. Never check in the publishable key, database password, service-role secret, or other private credential.
 
-- Created the public repository [`sharveshraam/Attendly`](https://github.com/sharveshraam/Attendly). The full 21-file project tree is on `main`; commit [`a74fdff`](https://github.com/sharveshraam/Attendly/commit/a74fdff497937134c754ca2bca3057c053754292) contains the dashboard and migration changes. GitHub's commit view verified 20 changed file paths; the original README from the initial commit is unchanged.
-- Initial connected organization check showed zero projects. After the user directed and confirmed creation, a new project was created in `Sharvesh Ram` (Free plan), with Data API enabled, automatic table exposure disabled, and automatic RLS enabled. See the verified project details immediately below. No migration has been applied remotely yet.
-- User confirmed the final Supabase create action. Project creation succeeded; project ID is `gavlxbxgxdormbfhtzlo`, dashboard URL is `https://supabase.com/dashboard/project/gavlxbxgxdormbfhtzlo`, region is Mumbai, and the dashboard is still initializing. The generated database password is retained only by Supabase and is intentionally not copied into chat, the repo, or this handoff. Next retrieve the project API URL and publishable key from Project Settings; record the URL and public key only in an ignored local `.env.local` (or other private local configuration), not this public repository. Never retrieve or record the service-role key unless an actual server-only integration requires it.
-- The project is Healthy and the API URL is `https://gavlxbxgxdormbfhtzlo.supabase.co`. The Supabase publishable key (`sb_publishable_…`) is saved with that URL in ignored local `.env.local`; do not copy it into this public progress file or commit it. No service-role key has been retrieved. Project is empty and no migration has been applied yet.
-- Added a deterministic attendance engine (`lib/attendance-engine.js`) and six Node built-in unit cases in `tests/attendance-engine.test.js`; wired `npm test` to `node --test`. All six cases passed with Node's built-in test runner through the available JavaScript runtime. The `npm test` script and Next.js production build remain unrun because Windows reports `npm` is unavailable.
-- Tightened shared-event RLS so group events must belong to the group's semester; members can create/update their own unverified/proposed changes while group owners/admins can confirm or reject them. Group-linked semesters are restricted to that group's owners/admins; group owners cannot remove their own owner membership; schedule history and snapshot writes are scoped to owned or joined semesters. Added Realtime publication membership for shared calendar, private attendance, group membership/polls, and user notifications. Updated README and feature-status documentation to clearly distinguish implemented work from the roadmap.
-- Supabase migration is still unapplied. The full migration text was staged in SQL Editor and verified at 480 lines (27,360 characters as pasted, CRLF line endings). It has not been run because subsequent RLS edits still need to be pushed and staged; no schema changes have been made to Supabase yet.
-- Vercel account/authorization is not connected or checked. No deployment has been attempted.
-- `npm install` could not run because `npm` is not installed/available in this environment. Consequently no lockfile, build, or automated verification has been produced yet. Do not claim a successful build.
+### Supabase project
 
-## Important security review findings
+- The user chose project creation in the `Sharvesh Ram` organization and explicitly confirmed the final creation action.
+- Project: `Attendly`; ref `gavlxbxgxdormbfhtzlo`; Mumbai (`ap-south-1`); Free plan; Nano compute.
+- Dashboard: <https://supabase.com/dashboard/project/gavlxbxgxdormbfhtzlo>
+- Project API URL: `https://gavlxbxgxdormbfhtzlo.supabase.co`
+- Supabase Data API is enabled; automatic table exposure is disabled; automatic RLS is on.
+- The generated database password is held by Supabase and was not retrieved or copied here. No service-role key was retrieved.
+- The project publishable key is configured locally in ignored `attendly/.env.local`, alongside the URL. It is not written into this public Markdown or committed. If another agent needs it locally, inspect the ignored file without printing or sharing the secret. For deployment, add the same two `NEXT_PUBLIC_SUPABASE_*` values as hosting-provider environment variables.
+- `lib/supabase/client.ts` and `lib/supabase/server.ts` use the project URL and prefer `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY`, while retaining compatibility with `NEXT_PUBLIC_SUPABASE_ANON_KEY`. `.env.example` documents the publishable-key variable.
 
-- Fixed in `supabase/migrations/0001_attendly_core.sql`: group-membership helper functions now use narrow `SECURITY DEFINER` lookups with an empty fixed search path to avoid recursive RLS evaluation; group creators become owners automatically; invite joining is via authenticated `join_group_by_invite(text)` and inserts only the `member` role; direct member self-enrollment policy was removed; group admins can add members but cannot assign elevated roles; owners can promote/demote members through a restricted RPC; private Storage bucket policies were added; assignment/resource writes are tied to owned semester/course records.
-- Before applying the migration, continue reviewing all RLS policies, storage setup, and relationship checks. In particular, verify group role lifecycle, storage bucket policies, group calendar approvals, and assignment/course ownership constraints.
-- The private attendance table is separate from shared calendar data and its policies remain owner-only.
+### Database migration and live checks
 
-## Remaining work (in order)
+- `supabase/migrations/0001_attendly_core.sql` was loaded in the project's SQL Editor and executed successfully (`Success. No rows returned`).
+- Live read-only catalog checks after migration found **19 public tables and all 19 have RLS enabled**.
+- Storage verification found the `academic-documents` bucket and confirmed `public = false`.
+- Realtime verification found all six intended tables in `supabase_realtime`: `calendar_events`, `attendance_records`, `group_members`, `calendar_polls`, `calendar_poll_votes`, and `notifications`.
+- Migration establishes the core academic, timetable/calendar, attendance, assignments/resources, group collaboration, polls, notifications, and audit/history tables; membership/ownership helpers and RPCs; scoped RLS policies; private Storage policies; and Realtime publication membership. Review the SQL before extending the data model.
+- Security choices: private attendance is owner-scoped; group creation assigns its creator the owner role; invite joining uses a controlled RPC that only grants member; role changes are constrained; calendar changes in shared groups require owner/admin approval; group-linked semester and academic content writes are scoped; private document paths require the authenticated user ID in the first folder.
 
-1. Finish security review and correct the migration; add private Storage bucket policies and document a safe first-time setup path.
-2. Continue building the website: real semester/course setup, calendar and attendance flows, assignment planner, account recovery/logout, settings, and trustworthy empty/loading/error states. Avoid fake success actions or placeholder data.
-3. Add deterministic attendance/semester/calendar logic and requested tests. Run tests/build when Node/npm becomes available; record exact outcomes here.
-4. `.env.local` contains the verified Supabase URL and publishable key. Inspect project state, apply the reviewed SQL migration to this new empty project, and verify table RLS and private Storage policies.
-5. Push final RLS edits, load the exact current migration into SQL Editor, verify its beginning/end and run it once on the empty Supabase project. Then verify every exposed table has RLS, the private Storage bucket exists, and Realtime includes intended tables.
-6. Continue website features and create real screens/flows; don't leave navigation as informational notices where a real action is expected.
-7. Add deterministic semester/calendar logic and requested tests. Run tests/build when Next/npm is available; record exact outcomes here.
-8. Push later security and website updates, including this progress file, to `sharveshraam/Attendly`; verify and record each commit.
-9. Prepare the final hosting ZIP and deployment configuration; deploy only when required account access is available.
+## Website and code delivered so far
+
+- Extracted the supplied Next.js App Router / TypeScript / Tailwind / Supabase SSR starter into `attendly-app/attendly/`; the original archive and synced sources were not changed.
+- Replaced the starter placeholder with a responsive dashboard showing real, RLS-filtered Supabase data when a user and semester exist: latest semester, course count, scheduled future class count, and confirmed attendance percentage. Explicit empty/setup states are used; sample metrics are not fabricated.
+- Added responsive navigation, overview cards, privacy copy, search dialog, setup prompts, sign-in/sign-up links, and mobile layout.
+- Starter email/password login and registration pages remain. Account recovery, logout, and full authenticated navigation flows still need finishing.
+- Added deterministic attendance calculations in `lib/attendance-engine.js` and six unit cases in `tests/attendance-engine.test.js`. All six passed using Node's built-in runner through the available JS runtime. Native `npm` is unavailable here, so `npm test`, dependency installation, lint, and Next production build have not run.
+- Updated `README.md` and `FEATURES.md` to distinguish implemented screens from planned product scope.
+
+## Current limits and next steps
+
+1. Continue the website: reliable sign-up/login/session redirect, logout and recovery, semester/course creation, real calendar and attendance workflows, assignments, settings, loading/error handling, and accessibility review. Keep all database access behind RLS and avoid fake-success UI.
+2. Review migration details against the product requirements and run realistic authenticated-user tests (including two users in different groups) before launch. Catalog checks verify RLS is enabled, not every policy's behavior.
+3. Install dependencies / run lint, `npm test`, and a production build in an environment with Node/npm, then fix any issues. The attendance-engine tests already passed independently; the website bundle remains unbuilt.
+4. Push this handoff and latest code/environment-name changes to GitHub. Record the resulting commit SHA below.
+5. Produce the requested hosting ZIP from the complete source, excluding `.env.local`, `node_modules`, `.next`, and credentials. Include setup instructions and the migration.
+6. Deployment has not been attempted; no hosting integration is connected. Do not describe the current partial website as production-ready.
+
+## Latest push log
+
+- Pending at this update: push of the corrected handoff plus Supabase publishable-key variable support. Add commit SHA and verification result after push.
 
 ## Handoff rules
 
-- Read this file first and then inspect the current tree/diff before continuing; some work may have advanced since this note.
+- Read this file, `FEATURES.md`, and `README.md`; inspect the working tree before continuing.
 - Preserve `sources/` as read-only.
-- Keep this file updated after each meaningful milestone, blocker, service action, test run, and push. Record dates and concrete results, not assumptions.
-- Never paste service-role secrets into this document or the chat. Keep only publishable Supabase configuration in client env variables.
-- The requested final product is much larger than the current implementation. Describe only features actually built and verified as complete.
+- Update this file after meaningful implementation, verification, external-service, and GitHub push milestones.
+- Keep secrets out of public repository files and chat. Supabase publishable keys are browser-safe by design but still must not be copied into this public handoff; service-role/database credentials are strictly private.
+- State only what was implemented and verified. Keep the current website scope and remaining work clear.
 

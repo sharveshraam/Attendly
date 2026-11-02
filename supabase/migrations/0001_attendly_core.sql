@@ -346,11 +346,15 @@ create policy "group owner delete" on public.groups for delete to authenticated 
 
 create policy "members view memberships" on public.group_members for select to authenticated using(public.is_group_member(group_id) or user_id=(select auth.uid()));
 create policy "group admins add members" on public.group_members for insert to authenticated with check(public.can_manage_group(group_id) and role='member');
-create policy "admins manage memberships" on public.group_members for delete to authenticated using(public.can_manage_group(group_id) or user_id=(select auth.uid()));
+create policy "admins remove members or self-leave" on public.group_members for delete to authenticated
+using((public.can_manage_group(group_id) and role <> 'owner') or (user_id=(select auth.uid()) and role <> 'owner'));
 
 create policy "semester owner or group member read" on public.semesters for select to authenticated using(owner_id=(select auth.uid()) or (group_id is not null and public.is_group_member(group_id)));
-create policy "semester owner create" on public.semesters for insert to authenticated with check(owner_id=(select auth.uid()));
-create policy "semester owner update" on public.semesters for update to authenticated using(owner_id=(select auth.uid())) with check(owner_id=(select auth.uid()));
+create policy "semester owner create" on public.semesters for insert to authenticated
+with check(owner_id=(select auth.uid()) and (group_id is null or (public.is_group_member(group_id) and public.can_manage_group(group_id))));
+create policy "semester owner update" on public.semesters for update to authenticated
+using(owner_id=(select auth.uid()))
+with check(owner_id=(select auth.uid()) and (group_id is null or (public.is_group_member(group_id) and public.can_manage_group(group_id))));
 create policy "semester owner delete" on public.semesters for delete to authenticated using(owner_id=(select auth.uid()));
 
 -- Courses and schedule configuration inherit semester ownership/group visibility.
@@ -377,6 +381,7 @@ create policy "event creator or group admin can add" on public.calendar_events f
           and public.is_group_member(calendar_events.group_id)
           and (public.can_manage_group(calendar_events.group_id) or verification_status='proposed'))
     )
+    and (calendar_events.course_id is null or exists(select 1 from public.courses c where c.id=calendar_events.course_id and c.semester_id=calendar_events.semester_id))
   )
 );
 create policy "group members propose event updates" on public.calendar_events for update to authenticated
@@ -388,12 +393,15 @@ using(
       and (public.can_manage_group(group_id) or (created_by=(select auth.uid()) and verification_status in ('unverified','proposed'))))
 )
 with check(
+  (
   (group_id is null and created_by=(select auth.uid())
    and exists(select 1 from public.semesters s where s.id=calendar_events.semester_id and s.owner_id=(select auth.uid())))
   or (group_id is not null and public.is_group_member(group_id)
       and exists(select 1 from public.semesters s where s.id=calendar_events.semester_id and s.group_id=calendar_events.group_id)
       and ((public.can_manage_group(group_id) and verification_status in ('unverified','proposed','confirmed','rejected'))
            or (created_by=(select auth.uid()) and verification_status in ('unverified','proposed'))))
+  )
+  and (calendar_events.course_id is null or exists(select 1 from public.courses c where c.id=calendar_events.course_id and c.semester_id=calendar_events.semester_id))
 );
 create policy "event creator or group admin delete" on public.calendar_events for delete to authenticated using(
   (group_id is null and created_by=(select auth.uid())
@@ -409,7 +417,11 @@ create policy "attendance private delete" on public.attendance_records for delet
 
 create policy "uploads private all" on public.document_uploads for all to authenticated using(owner_id=(select auth.uid())) with check(owner_id=(select auth.uid()));
 create policy "change log group read" on public.schedule_change_log for select to authenticated using(exists(select 1 from public.semesters s where s.id=semester_id and (s.owner_id=(select auth.uid()) or (s.group_id is not null and public.is_group_member(s.group_id)))));
-create policy "change log actor insert" on public.schedule_change_log for insert to authenticated with check(actor_id=(select auth.uid()));
+create policy "change log actor insert" on public.schedule_change_log for insert to authenticated
+with check(actor_id=(select auth.uid()) and exists(
+  select 1 from public.semesters s where s.id=schedule_change_log.semester_id and
+    (s.owner_id=(select auth.uid()) or (s.group_id is not null and public.is_group_member(s.group_id)))
+) and (event_id is null or exists(select 1 from public.calendar_events e where e.id=event_id and e.semester_id=schedule_change_log.semester_id)));
 create policy "assignments owner all" on public.assignments for all to authenticated
 using(owner_id=(select auth.uid()))
 with check(owner_id=(select auth.uid()) and exists(select 1 from public.semesters s where s.id=semester_id and s.owner_id=(select auth.uid())) and (course_id is null or exists(select 1 from public.courses c where c.id=course_id and c.semester_id=assignments.semester_id)));
@@ -424,7 +436,9 @@ create policy "poll creator manage" on public.calendar_polls for update to authe
 create policy "poll vote private" on public.calendar_poll_votes for all to authenticated using(user_id=(select auth.uid()) and exists(select 1 from public.calendar_polls p where p.id=poll_id and public.is_group_member(p.group_id))) with check(user_id=(select auth.uid()) and exists(select 1 from public.calendar_polls p where p.id=poll_id and public.is_group_member(p.group_id)));
 create policy "push subscriptions private" on public.push_subscriptions for all to authenticated using(user_id=(select auth.uid())) with check(user_id=(select auth.uid()));
 create policy "snapshots owner read" on public.semester_snapshots for select to authenticated using(created_by=(select auth.uid()));
-create policy "snapshots owner write" on public.semester_snapshots for all to authenticated using(created_by=(select auth.uid())) with check(created_by=(select auth.uid()));
+create policy "snapshots owner write" on public.semester_snapshots for all to authenticated
+using(created_by=(select auth.uid()))
+with check(created_by=(select auth.uid()) and exists(select 1 from public.semesters s where s.id=semester_id and s.owner_id=(select auth.uid())));
 
 -- Documents are stored in a private bucket under a first-level folder equal to
 -- the owning auth UID: <uid>/<generated-object-name>.

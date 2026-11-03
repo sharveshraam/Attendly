@@ -12,6 +12,15 @@ Features with a missing backend dependency are explicitly listed as unavailable.
   `SET LOCAL ROLE authenticated` + JWT: reads are owner-scoped, rolled-back
   writes succeeded across 19 tables, and no test data remains. The mobile app
   needed no source change because it uses the same Supabase project.
+- **Remaining `anon` / `service_role` privilege gaps** after that first pass:
+  anonymous requests still saw `permission denied` instead of an empty RLS
+  result, and `service_role` could not operate on any table. Fixed by
+  `0003_restore_standard_api_role_grants.sql`, which restores the standard
+  Supabase baseline for all three API roles on current and future public
+  tables/sequences. RLS and all 42 policies are unchanged; `anon` still sees
+  and can write zero rows. Verified live with `SET LOCAL ROLE` simulations for
+  `anon`, a random `authenticated` UID, the real UID, and `service_role`. No
+  users, rows, objects or settings were deleted.
 
 
 

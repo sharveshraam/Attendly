@@ -1,5 +1,33 @@
 # Changelog
 
+## 2026-11-03 — Clear the remaining Supabase privilege gaps (all API roles)
+
+`0002` fixed signed-in pages but left `anon=Dxtm` and `service_role=Dxtm` on all
+19 public tables. An anonymous request still hit `permission denied for table …`
+instead of an empty RLS result (session restore / auth callback), and
+`service_role` could not run any table operation.
+
+- Applied `supabase/migrations/0003_restore_standard_api_role_grants.sql`
+  (Supabase migration `20261103104600_restore_standard_api_role_grants`):
+  the standard `arwdDxtm` baseline for `anon`, `authenticated` and
+  `service_role` on all public tables/sequences plus `ALTER DEFAULT PRIVILEGES
+  FOR ROLE postgres` for future tables and sequences.
+- **RLS stays enabled on all 19 tables; all 42 policies unchanged**, all `to
+  authenticated`. `anon` sees/writes zero rows — grants, not data access.
+  `service_role` bypasses RLS by design (standard Supabase); its key is not used
+  by web, mobile or this repo. No user, row, bucket, object, Auth setting, API
+  key, schema object or migration was deleted or altered.
+- Verified live: 19/19 tables with all four DML privileges for all three roles,
+  0 RLS-off, 42 + 4 policies, `postgres` default ACLs now identical to
+  `supabase_admin`, `anon` simulation returns 0 rows with no error, real
+  `authenticated` simulation returns only its own profile, `service_role`
+  simulation succeeds. Row census: 1 auth user, 1 profile, 0 rows elsewhere.
+- `tests/db-grants.test.ts` now guards both migrations (6 static tests),
+  including that neither ever disables RLS, drops a policy/table, truncates or
+  issues `DELETE FROM`.
+- No redeploy: web and mobile share this backend. No Vercel, DNS, `main` or
+  Deployment Protection change.
+
 ## 2026-11-03 — Fix `permission denied for table …` on every page (web + mobile)
 
 ### Root cause
@@ -19,9 +47,10 @@ Android app share this project, so both broke.
   - sequence grants for completeness
   - `ALTER DEFAULT PRIVILEGES FOR ROLE postgres …` so future tables keep the grants
 - **RLS stays enabled on all 19 tables; all 42 policies are unchanged.** No
-  schema, column, policy, data, Auth, Storage or Edge Function change. `anon`
-  and `service_role` were not widened.
-- Added `tests/db-grants.test.ts` (3 static regression guards).
+  schema, column, policy, data, Auth, Storage or Edge Function change. This
+  first pass was scoped to `authenticated`; the follow-up above completes the
+  baseline for every API role.
+- Added `tests/db-grants.test.ts` (static regression guards).
 
 ### Verified against the live project
 - Privilege matrix: all 19 tables now allow SELECT/INSERT/UPDATE/DELETE for

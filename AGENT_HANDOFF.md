@@ -18,9 +18,12 @@ _Last updated: 2026-11-03._
   backend config, production data, or the mobile branch.**
 - No schema change, RLS/Storage/Edge Function edit, service-role key,
   production credential change or production data test. **Exception (owner
-  explicitly requested):** `0002_restore_authenticated_grants.sql` was applied
-  to fix `permission denied for table …`; it grants only table-level DML to
-  `authenticated`, with RLS and every policy unchanged.
+  explicitly requested):** `0002_restore_authenticated_grants.sql` and
+  `0003_restore_standard_api_role_grants.sql` were applied to clear the
+  `permission denied for table …` privilege gaps. They grant only table-level
+  DML (to `authenticated`, then the standard baseline for `anon`,
+  `authenticated` and `service_role`); RLS and every policy are unchanged, and
+  **no user, row or Storage object was deleted**.
 - No production deployment, DNS change, irreversible infrastructure change or
   `main` merge without explicit authorisation. Preview is allowed.
 - The additive Supabase Auth redirect allow-list change was approved and
@@ -43,10 +46,15 @@ _Last updated: 2026-11-03._
   manifest and offline assets; no legacy accent colour in source or built bundle.
 - Local frontend linked to the live Supabase project via ignored `.env.local`
   (public URL + publishable key only); approved additive Auth allow-list applied.
-- **Database access repaired:** `authenticated` now has DML grants on all 19
-  public tables; RLS and all 42 policies intact. Fixes `permission denied for
-  table semesters` for both web and mobile. See `docs/AUDIT.md` and
-  `tests/db-grants.test.ts`.
+- **Database access cleared for all API roles:** all 19 public tables now
+  have SELECT/INSERT/UPDATE/DELETE for `anon`, `authenticated` and
+  `service_role`, plus repaired `postgres` default privileges; RLS and all 42
+  policies intact (`anon` still sees zero rows). Fixes `permission denied for
+  table semesters` for both web and mobile. Migration history:
+  `20261103103452_restore_authenticated_table_grants` and
+  `20261103104600_restore_standard_api_role_grants`. Live row census: 1 auth
+  user, 1 profile, 0 rows elsewhere, 0 Storage objects — nothing wiped. See
+  `docs/AUDIT.md` and `tests/db-grants.test.ts`.
 - Vercel project `attendly-web` created with the two public env vars.
 - Local production server on `0.0.0.0:3000` is the Arena live preview.
 - Vercel deployments `dpl_GgaeYpWKRUT7d5u6dvQkha6s2YfT` (`aa7dd73`) and
@@ -99,6 +107,12 @@ _Last updated: 2026-11-03._
 - `.env.example` has placeholders only. Never commit real keys; the publishable
   key is browser-safe but the progress/handoff rules say not to copy it into
   public docs.
-- Do not revoke the `authenticated` table grants. `tests/db-grants.test.ts`
-  fails if `0002_restore_authenticated_grants.sql` stops granting DML, disables
-  RLS, drops policies, or widens access to `anon` / `service_role`.
+- Do not revoke the API-role table grants. `tests/db-grants.test.ts` fails if
+  either `0002_restore_authenticated_grants.sql` or
+  `0003_restore_standard_api_role_grants.sql` stops granting DML/default
+  privileges, disables RLS, drops policies/tables, or contains any `DELETE`,
+  `TRUNCATE` or `GRANT ALL PRIVILEGES`.
+- The owner's "clear everything in supabase" was implemented as **clearing the
+  privilege layer**, not deleting account data. A full wipe of `auth.users` and
+  public rows is irreversible and still requires an explicit, unambiguous
+  instruction; `delete_project` is off-limits.

@@ -6,13 +6,15 @@
   production database setting change or `main` merge without explicit owner
   authorisation.
 - No schema change, RLS policy edit, Storage policy change, Edge Function
-  change or production data test was made. Two **owner-approved additive**
+  change or production data test was made. Three **owner-approved additive**
   changes exist: the Auth redirect allow-list below (`site_url` and all other
-  Auth settings unchanged) and `0002_restore_authenticated_grants.sql`, which
-  restores the missing `authenticated` table-level DML grants without disabling
-  RLS or altering any policy. Both were needed to make the app usable. The
-  deployed Android app source is untouched; it benefits from the same backend
-  fix.
+  Auth settings unchanged), `0002_restore_authenticated_grants.sql` (restores
+  the missing `authenticated` table-level DML grants) and
+  `0003_restore_standard_api_role_grants.sql` (completes the standard baseline
+  for `anon`, `authenticated` and `service_role`). No RLS policy was altered and
+  no user, row or Storage object was deleted. All were needed to make the app
+  usable; they are database-side, so **no redeploy is required**. The deployed
+  Android app source is untouched; it benefits from the same backend fix.
 - Only public/publishable Supabase values belong in Vercel env vars.
 
 ## Vercel project state (2026-11-03)

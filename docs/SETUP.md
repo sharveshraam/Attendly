@@ -7,9 +7,9 @@
   (ref `gavlxbxgxdormbfhtzlo`, `ap-south-1`). **Do not create a second project,
   re-run migration `0001`, or change RLS/Storage settings.** The
   owner-approved additive Auth redirect allow-list is already applied;
-  `site_url` and every other Auth setting are unchanged. The `authenticated`
-  table grants were restored by `0002_restore_authenticated_grants.sql` — do
-  not revoke them.
+  `site_url` and every other Auth setting are unchanged. The API-role table
+  grants were restored by `0002_restore_authenticated_grants.sql` and
+  `0003_restore_standard_api_role_grants.sql` — do not revoke them.
 - A copy of `.env.example` → `.env.local` with the project's **public** URL and
   publishable key. These are browser-safe values; authorisation is RLS.
 
@@ -48,12 +48,18 @@ for the API roles. PostgREST rejected every request with
 `permission denied for table semesters` before RLS ran — on the website **and**
 the mobile app, because both use the same project.
 
-`supabase/migrations/0002_restore_authenticated_grants.sql` (already applied to
-the live project) grants DML on all public tables/sequences to `authenticated`
-and fixes the default ACL for future tables. RLS and every policy are unchanged;
-`anon` and `service_role` were not widened. If you create a fresh project from
-`0001`, apply `0002` immediately afterwards. `tests/db-grants.test.ts` guards
-the file.
+`supabase/migrations/0002_restore_authenticated_grants.sql` and
+`supabase/migrations/0003_restore_standard_api_role_grants.sql` (both already
+applied to the live project) grant DML on all public tables/sequences to
+`authenticated` and then restore the standard Supabase baseline for `anon`,
+`authenticated` and `service_role`, including the `postgres` default ACL for
+future tables. RLS and every policy are unchanged: `anon` has table grants but
+**no policies**, so it still sees and can write zero rows — the grants only
+remove the `permission denied` error that fired before RLS could return an empty
+result. `service_role` bypasses RLS by design (standard Supabase); its key is
+never used by this app. If you create a fresh project from `0001`, apply `0002`
+then `0003` immediately afterwards. `tests/db-grants.test.ts` guards both files
+and forbids any `DELETE`, `TRUNCATE` or `DROP TABLE` inside them.
 
 ## Supabase link and Auth origins
 

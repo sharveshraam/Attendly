@@ -13,6 +13,8 @@
 | `npm audit` (full) | 16 moderate dev-only advisories (eslint / typescript-eslint / minimatch); `npm audit fix` suggests downgrades and was not applied |
 | HTTP smoke test | 27 routes/assets returned 200, including all public/auth/app routes, `/manifest.webmanifest`, `/sw.js`, `/offline.html`, four PNG icons and the SVG icon |
 | Database grants (live, read-only) | `SET LOCAL ROLE authenticated` + synthetic JWT: random UID saw 0 rows, real UID saw only its own profile; rolled-back writes succeeded across 19 tables; zero test data left. See `docs/AUDIT.md` |
+| API-role privilege matrix (live, read-only) | After `0003`: 19/19 public tables have SELECT/INSERT/UPDATE/DELETE for `anon`, `authenticated` and `service_role`; `rls_off = 0`; 42 public + 4 Storage policies; `postgres` default ACLs equal `supabase_admin`. `SET LOCAL ROLE anon` → 0 rows with no permission error; random `authenticated` UID → 0 rows; real UID → 1 own profile; `service_role` → queries succeed. |
+| `tests/db-grants.test.ts` | 6 static tests: both grant migrations exist, grant all four DML privileges, fix default privileges, and contain no `DISABLE ROW LEVEL SECURITY`, `DROP POLICY`, `DROP TABLE`, `TRUNCATE`, `DELETE FROM` or `GRANT ALL PRIVILEGES`. |
 
 > **After the Supabase link (2026-11-03):** the 10 authenticated app routes now
 > correctly return `307` → `/login?next=…` for an anonymous visitor (the server

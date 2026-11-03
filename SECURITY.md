@@ -22,13 +22,21 @@ _Last updated: 2026-11-03._
   `app/(app)/layout.tsx` are routing guards, not authorization.
 - **Table privileges are also required.** PostgreSQL checks table-level
   grants before RLS. This project was created with a `postgres` default ACL that
-  omitted `arwd` for `authenticated`, so every request failed with
-  `permission denied for table …` on the website and in the mobile app. `supabase/migrations/0002_restore_authenticated_grants.sql` grants
+  omitted `arwd` for the API roles, so every request failed with
+  `permission denied for table …` on the website and in the mobile app.
+  `supabase/migrations/0002_restore_authenticated_grants.sql` grants
   SELECT/INSERT/UPDATE/DELETE on all public tables and sequences to
-  `authenticated` and repairs the `postgres` default ACL for future tables.
-  RLS stays enabled, all 42 policies are unchanged, and no grant was added
-  to `anon` or `service_role`. `tests/db-grants.test.ts` guards against removing the grants, disabling RLS
-  or widening the fix to `anon`/`service_role`.
+  `authenticated`; `supabase/migrations/0003_restore_standard_api_role_grants.sql`
+  completes the cleanup with the standard Supabase baseline (`arwdDxtm`) for
+  `anon`, `authenticated` and `service_role` on current and future
+  tables/sequences. **This widens no data access:** RLS stays enabled on all 19
+  tables, all 42 policies are unchanged and every one is `to authenticated`, so
+  `anon` still sees and can write zero rows — the grant only removes the
+  misleading permission error. `service_role` bypasses RLS by design, as on
+  every standard Supabase project; no service-role key is read, stored or used
+  by the website, mobile app or repository. `tests/db-grants.test.ts` guards
+  against removing the grants, disabling RLS, dropping policies/tables, or
+  putting any `DELETE`/`TRUNCATE` into a grant migration.
 - `attendance_records` queries always filter by `user_id`; writes include the
   caller's own `user_id`. Group pages never query attendance records.
 - `profiles` is self-select only. Other group members are rendered as

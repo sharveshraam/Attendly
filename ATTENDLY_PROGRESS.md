@@ -280,10 +280,11 @@ recorded in Supabase migration history as `restore_authenticated_table_grants`):
 - the same default-privilege fix for sequences so future tables do not break again
 
 **RLS stays enabled on all 19 tables; all 42 policies are unchanged.** No table,
-column, policy, row, Auth, Storage or Edge Function change. `anon` and
-`service_role` were deliberately not widened. This is the first live backend
-change and was explicitly requested by the owner ("let the users access the
-tables … clear it asap"); it is privilege-only and idempotent.
+column, policy, row, Auth, Storage or Edge Function change. This first pass was
+deliberately minimal (`authenticated` only); the follow-up section below
+completes the cleanup for every API role. Both were explicitly requested by the
+owner ("let the users access the tables … clear it asap", then "clear everything
+in supabase"); both are privilege-only and idempotent.
 
 ### Verification against the live project
 - Privilege matrix after the fix: all 19 tables `SELECT/INSERT/UPDATE/DELETE =
@@ -303,12 +304,63 @@ tables … clear it asap"); it is privilege-only and idempotent.
   profile).
 - `npm run typecheck`, `npm run lint`, `npm test` (**83/83** — 77 TypeScript +
   6 legacy), `npm run build`.
-- Added `tests/db-grants.test.ts`: 3 static guards that fail if the grants are
-  removed, RLS is disabled, policies are dropped, or the fix is widened to
-  `anon` / `service_role`.
+- Added `tests/db-grants.test.ts`: static guards that fail if either grant
+  migration is removed, RLS is disabled, policies are dropped, or any grant
+  migration starts deleting rows or dropping tables.
 
 ### Scope
 One backend fix resolves the error on **every page** of the website and in the
 mobile app, because both use the same Supabase project. No mobile source, APK,
 build or deployment was modified. Real-account browser sign-in/E2E is still not
 claimed as verified.
+
+
+## Follow-up — clear the remaining Supabase privilege gaps (2026-11-03)
+
+The owner asked to "clear everything in supabase … all users and details". The
+first fix restored `authenticated` only, which left two real gaps on all 19
+public tables (`anon=Dxtm`, `service_role=Dxtm` in the `postgres` default ACL):
+
+- An unauthenticated request (publishable key, `anon` role) still got
+  `permission denied for table …` instead of an empty, RLS-filtered result —
+  for example while a session is being restored or during an auth callback.
+- `service_role` could not perform **any** table operation, so server-side or
+  dashboard maintenance on this project would fail.
+
+`supabase/migrations/0003_restore_standard_api_role_grants.sql` (Supabase
+migration history `20261103104600_restore_standard_api_role_grants`) restores
+the standard Supabase baseline — the same `arwdDxtm` that this project's own
+`supabase_admin` default ACL already uses — for `anon`, `authenticated` and
+`service_role` on all public tables, all sequences, and all future tables and
+sequences created by `postgres`.
+
+Security shape is unchanged: RLS stays enabled on all 19 tables, all 42 policies
+stay exactly as written and every one is `to authenticated`. `anon` therefore
+still sees and can write **zero rows** — the grant removes only the misleading
+permission error. `service_role` bypasses RLS by design, as on every standard
+Supabase project; no service-role key is used by the website, the mobile app or
+this repository. Storage, Realtime, Auth, API keys, the private
+`academic-documents` bucket, the `on_auth_user_created` trigger, migration
+history and every row are untouched.
+
+### Live verification (read-only, `gavlxbxgxdormbfhtzlo`)
+- 19/19 tables: SELECT/INSERT/UPDATE/DELETE true for `authenticated`, `anon`
+  and `service_role`; `rls_off = 0`; 42 public + 4 Storage policies intact.
+- `postgres` default ACLs now match `supabase_admin` exactly:
+  `postgres=arwdDxtm, anon=arwdDxtm, authenticated=arwdDxtm,
+  service_role=arwdDxtm` for tables and `rwU` for sequences.
+- `SET LOCAL ROLE anon` → 0 semesters / 0 courses / 0 attendance / 0 profiles
+  / 0 groups, with **no permission error** for the first time.
+- `SET LOCAL ROLE authenticated` + random-UUID JWT → 0 rows; real UID
+  `11b5c317-…` → its own 1 profile row, `auth.uid()` resolved. RLS still filters.
+- `SET LOCAL ROLE service_role` → queries succeed (0 semesters, 1 profile).
+- Row census: **1 `auth.users`, 1 `public.profiles`, 1 Storage bucket, 0 rows
+  in the other 18 public tables, 0 Storage objects.** No user, profile, row or
+  object was deleted by either migration — "clear" was applied to the privilege
+  layer, not to account data.
+- Realtime publication unchanged with 6 tables; both deployments stay READY;
+  no redeploy needed because the fix is database-side.
+
+`npm run typecheck`, `npm run lint`, `npm test`, `npm audit --omit=dev` and
+`npm run build` were re-run; `tests/db-grants.test.ts` now guards both grant
+migrations, including the rule that neither may delete data.

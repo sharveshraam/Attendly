@@ -22,13 +22,17 @@ Browser (website PWA)                Android app (unchanged)
 ```
 
 No schema changes, RLS policy edits, Edge Functions or Storage policy changes
-were made for the website. Two **owner-approved additive** backend changes are
+were made for the website. Three **owner-approved additive** backend changes are
 config/privilege-only: the Auth redirect allow-list (`site_url` and all other
-Auth settings unchanged), and `0002_restore_authenticated_grants.sql`, which
-restores the missing `authenticated` table-level DML grants that caused
-`permission denied for table semesters` on every page. No table, column, policy
-or production row was altered; RLS remains enabled on all 19 tables with all 42
-policies intact. **Obsidian Academic** is a CSS/token-level, dark-first design
+Auth settings unchanged), `0002_restore_authenticated_grants.sql` (restores the
+missing `authenticated` table-level DML grants) and
+`0003_restore_standard_api_role_grants.sql` (restores the standard Supabase
+baseline for `anon`, `authenticated` and `service_role` on current and future
+public tables/sequences). Together they clear `permission denied for table
+semesters` on every page for every API role. No table, column, policy, user,
+production row, Storage object or bucket was altered or deleted; RLS remains
+enabled on all 19 tables with all 42 `to authenticated` policies intact, so
+`anon` still sees zero rows. **Obsidian Academic** is a CSS/token-level, dark-first design
 system in `app/web.css` with a locally bundled Inter font — no mobile or
 infrastructure change.
 

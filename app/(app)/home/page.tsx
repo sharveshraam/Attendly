@@ -10,6 +10,7 @@ import { useNow } from "@/hooks/use-now";
 import { EmptyState, ErrorState, LoadingState, PageHeader, Panel, ProgressBar, RiskBadge, StatCard } from "@/components/ui";
 import { ProgressRing } from "@/components/charts";
 import { AttendanceMarker } from "@/components/attendance-marker";
+import { AcademicOverview } from "@/components/academic-overview";
 import { greeting, formatDate, formatTime, isToday, relativeDayLabel, countdownLabel } from "@/lib/dates";
 
 export default function HomePage() {
@@ -49,7 +50,8 @@ export default function HomePage() {
         subtitle={semester ? `${semester.name}${semester.institution ? ` · ${semester.institution}` : ""}` : "Set up your semester to get started."}
         actions={<>
           <Link className="btn" href="/calendar"><CalendarDays size={14} /> Calendar</Link>
-          <Link className="btn btn-primary" href="/onboarding"><Plus size={14} /> Set up semester</Link>
+          <Link className="btn" href="/onboarding"><Plus size={14} /> Set up semester</Link>
+          <Link className="btn btn-primary" href="/academic"><Sparkles size={14} /> Import timetable</Link>
         </>}
       />
 
@@ -76,6 +78,8 @@ export default function HomePage() {
             <StatCard label="Courses at risk" value={atRisk.length} foot={atRisk.length ? "See recovery suggestions below" : "All courses on track"} icon={<TriangleAlert size={16} />} tone={atRisk.length ? "danger" : "success"} />
             <StatCard label="Today's classes" value={todaySessions.length} foot={todaySessions.length ? "Mark them below" : "Nothing scheduled today"} icon={<CalendarDays size={16} />} />
           </div>
+
+          <AcademicOverview />
 
           <div className="dash-grid">
             <Panel

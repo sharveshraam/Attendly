@@ -2,7 +2,7 @@
 
 import { useMemo, useState } from "react";
 import Link from "next/link";
-import { ArrowLeft, ArrowRight, CheckCircle2, GraduationCap, Sparkles } from "lucide-react";
+import { ArrowLeft, ArrowRight, CheckCircle2, GraduationCap, Sparkles, WandSparkles } from "lucide-react";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useToast } from "@/components/toast";
 import { Field, PageHeader, Panel } from "@/components/ui";
@@ -169,6 +169,9 @@ export default function OnboardingPage() {
           <div className="stack" style={{ gap: 8 }}>
             <div className="alert" style={{ fontSize: 11.5 }}>Step 1: profile, institution, semester dates and attendance target.</div>
             <div className="alert" style={{ fontSize: 11.5 }}>Step 2: courses, with optional per-course targets and hour-based mode.</div>
+            <div className="alert alert-accent" style={{ fontSize: 11.5 }}>
+              <WandSparkles size={14} /> Prefer automatic setup? <Link href="/academic" style={{ textDecoration: "underline" }}>Import your timetable & academic calendar</Link> and Attendly will detect every course, weekly class count, holiday and expected semester session for you. Manual setup below stays available as a fallback.
+            </div>
             <div className="alert" style={{ fontSize: 11.5 }}>Step 3: CSV timetable / academic calendar with human review, or private PDF/image storage.</div>
             <div className="alert" style={{ fontSize: 11.5 }}>Step 4: review conflicts and generate dated class sessions.</div>
           </div>
@@ -231,6 +234,9 @@ export default function OnboardingPage() {
 
       {step === 3 && (
         <Panel eyebrow="Step 3 of 4" title="Timetable & academic calendar">
+          <div className="alert alert-accent" style={{ marginBottom: 12, fontSize: 11.5 }}>
+            <WandSparkles size={14} /> <span><strong>Automatic detection:</strong> <Link href="/academic" style={{ textDecoration: "underline" }}>open the academic-structure wizard</Link> to detect courses, weekly class counts, holidays and expected sessions from PDF, image, Excel or CSV. The CSV-only importer below remains as a manual fallback.</span>
+          </div>
           {semesterId && user ? (
             <TimetableImport semesterId={semesterId} userId={user.id} courses={courseRows} rules={rules} onDone={() => void refresh()} />
           ) : <div className="alert alert-warning">Save academic setup first.</div>}

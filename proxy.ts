@@ -45,6 +45,7 @@ export async function proxy(request: NextRequest) {
   const path = request.nextUrl.pathname;
   const isAppRoute =
     path.startsWith("/home") ||
+    path.startsWith("/academic") ||
     path.startsWith("/calendar") ||
     path.startsWith("/courses") ||
     path.startsWith("/attendance") ||

@@ -3,6 +3,36 @@
 _Last updated: 2026-11-03._ Nothing in this file is "complete but undocumented".
 Features with a missing backend dependency are explicitly listed as unavailable.
 
+## Current limits — automatic academic structure (2026-11-03)
+
+- **PDF extraction reads the text layer only.** Scanned/image-only PDFs honestly
+  report "no readable text" and offer image OCR or manual entry. There is no
+  OCR/AI Edge Function and no external extraction service.
+- **OCR is local, low-confidence and unverified in a real browser.** Tesseract
+  assets are vendored by `npm run vendor:ocr` into gitignored
+  `public/vendor/ocr/`; if the assets or worker fail, `OcrUnavailableError`
+  points to CSV/manual entry. Browser WASM, Service-Worker caching and offline
+  OCR were not E2E-verified; `public/sw.js` caches only the static shell, so
+  offline OCR is **not** supported or claimed.
+- **Mobile UI screens and APK were not modified.** The mobile app source tree is
+  not checked out on this branch. The shared pure core
+  (`packages/attendly-core`) and the mobile data-layer adapter
+  (`apps/mobile/src/lib/academic/`) are implemented, type-checked and
+  parity-tested, with the Expo Metro configuration and screen contract
+  documented in that folder's README. No claim that the Android/iOS screen
+  already renders the 8-step flow, and no APK rebuild or deploy.
+- **No real-account browser E2E** of the wizard, no hosted SSO route check, no
+  production deploy, DNS change or `main` merge. Local smoke checks only.
+- `academic_days(semester_id, day)` is unique, so several exceptions on one
+  date are stored in one row's `extra_data.exceptions` rather than separate
+  rows. Both adapters expand that payload.
+- `0003` still contains broad `anon` DML table grants despite the standing "no
+  broad anon grants" constraint. All 42 public policies are `to authenticated`,
+  so `anon` sees/writes zero rows. This remains unresolved; nothing was
+  silently revoked or reapplied.
+- Attendance rules and institution-specific policies were not changed. A
+  weekly timetable entry is a prediction, never proof of a conducted class.
+
 ## Resolved — database access (2026-11-03)
 
 - **`permission denied for table semesters` on every page, in the website and

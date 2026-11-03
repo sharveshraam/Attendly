@@ -119,3 +119,28 @@ Tailwind 4.3.4 via `@tailwindcss/postcss`, `@supabase/ssr` 0.12.7,
 `NEXT_PUBLIC_SUPABASE_URL` and `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (or the
 legacy anon key) are read. `next.config.ts` sets conservative security headers
 and a CSP whose `connect-src` allows only self and `*.supabase.co`.
+
+
+## Automatic academic structure (2026-11-03)
+
+`packages/attendly-core` is the single source of truth for timetable/calendar
+interpretation and class counting. Website `lib/academic/*` re-export it; the
+Android/iOS adapter in `apps/mobile/src/lib/academic/` imports the same files.
+Web-only concerns stay in `lib/academic/bridge.ts` (Supabase row shapes) and
+`lib/academic/formats/*` (XLSX/PDF/OCR/hash). The 8-step wizard at `/academic`
+and the dashboard overview both consume `computeSchedule` from this core;
+`lib/data.ts` remains the only RLS gateway and the shared
+`expected_class_counts` RPC gives both apps the server-side projection.
+
+Expected counts come from generated dates, not `weeks × weekly count`. Explicit
+calendar exceptions override the weekly template; a Saturday following Monday's
+timetable runs Monday's rules once on that Saturday. Unconfirmed exceptions
+never affect counts. `scheduled` / `conducted` / `attended` / `absent` /
+`cancelled` / `pending` remain distinct; only confirmed attendance marks affect
+the percentage, using the unchanged canonical attendance engine.
+
+Schema extensions are additive only: 25 columns (24 in `0004` + `extra_data` in `0006`), 9 non-partial indexes,
+`academic_days.extra_data jsonb` and one security-invoker RPC. Existing tables,
+policies, RLS, Storage, Auth and API keys are untouched. Idempotency uses
+deterministic `source_key`s plus `ignoreDuplicates`. Full detail, verification
+and limits: `docs/ACADEMIC_STRUCTURE.md`.

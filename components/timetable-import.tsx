@@ -76,7 +76,7 @@ export function TimetableImport({ semesterId, userId, courses, rules, onDone }: 
       return;
     }
     setMessage(
-      "The file was stored in your private document folder. Automatic OCR / AI extraction is not available in this backend, so nothing was interpreted. Add the details manually or upload a CSV for local parsing.",
+      "The file was stored in your private document folder. This legacy CSV importer does not interpret PDF/image/Excel files and no backend OCR/AI service exists. Use the automatic academic-structure wizard for local extraction, add the details manually, or upload a CSV.",
     );
   }
 
@@ -183,7 +183,7 @@ export function TimetableImport({ semesterId, userId, courses, rules, onDone }: 
     <div className="stack">
       <div className="alert">
         <Info size={15} style={{ flex: "none" }} />
-        <span style={{ fontSize: 11.5 }}>CSV is parsed locally and every row is shown below for human review. PDF, image and Excel files are stored privately but are <strong>not</strong> auto-extracted — no OCR/AI service exists in the backend. Nothing is written to your timetable until you confirm.</span>
+        <span style={{ fontSize: 11.5 }}>CSV is parsed locally and every row is shown below for human review. This legacy importer does not auto-extract PDF, image or Excel files; no backend OCR/AI service exists. For local PDF/image/Excel detection use the <a href="/academic">automatic academic-structure wizard</a>. Nothing is written to your timetable until you confirm.</span>
       </div>
 
       <div style={{ display: "flex", gap: 10, alignItems: "flex-end", flexWrap: "wrap" }}>

@@ -12,3 +12,6 @@ playwright-report/
 test-results/
 npm-debug.log*
 .turbo/
+
+# Generated local OCR assets (produced by npm run vendor:ocr)
+public/vendor/ocr/

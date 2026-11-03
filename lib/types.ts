@@ -20,6 +20,7 @@ export type CalculationMode = "class_count" | "hours";
 export type PredictionMode = "fixed" | "rolling";
 export type VerificationStatus = "unverified" | "proposed" | "confirmed" | "rejected";
 export type AssignmentStatus = "pending" | "in_progress" | "submitted";
+export type SessionType = "lecture" | "tutorial" | "lab" | "practical" | "seminar" | "unknown";
 export type DocumentKind = "timetable" | "academic_calendar" | "exam_schedule" | "other";
 export type ExtractionStatus = "uploaded" | "processing" | "review_required" | "approved" | "failed";
 
@@ -65,6 +66,11 @@ export interface CourseRow {
   calculation_mode: CalculationMode;
   color: string;
   created_at: string;
+  /** Added by migration 0004 — optional so pre-0004 rows still type-check. */
+  faculty?: string | null;
+  source_key?: string | null;
+  detection_source?: string | null;
+  confirmed_at?: string | null;
 }
 export interface TimetableRuleRow {
   id: string;
@@ -77,6 +83,10 @@ export interface TimetableRuleRow {
   valid_from: string | null;
   valid_until: string | null;
   created_at: string;
+  session_type?: SessionType;
+  faculty?: string | null;
+  source_key?: string | null;
+  revision?: string;
 }
 export interface AcademicDayRow {
   id: string;
@@ -85,6 +95,14 @@ export interface AcademicDayRow {
   kind: AcademicDayKind;
   title: string | null;
   notes: string | null;
+  follows_weekday?: number | null;
+  closure_scope?: "full_day" | "partial" | "unknown";
+  start_time?: string | null;
+  end_time?: string | null;
+  exception_type?: string | null;
+  source_key?: string | null;
+  confirmed?: boolean;
+  extra_data?: Json | null;
 }
 export interface CalendarEventRow {
   id: string;
@@ -104,6 +122,11 @@ export interface CalendarEventRow {
   updated_by: string | null;
   created_at: string;
   updated_at: string;
+  source_key?: string | null;
+  session_date?: string | null;
+  session_type?: SessionType;
+  origin?: string | null;
+  import_id?: string | null;
 }
 export interface AttendanceRecordRow {
   id: string;
@@ -125,6 +148,10 @@ export interface DocumentUploadRow {
   extraction_status: ExtractionStatus;
   extracted_data: Json | null;
   created_at: string;
+  content_hash?: string | null;
+  confirmed_at?: string | null;
+  import_batch_id?: string | null;
+  sheet_index?: number | null;
 }
 export interface ScheduleChangeLogRow {
   id: string;

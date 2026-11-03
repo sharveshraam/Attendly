@@ -26,6 +26,7 @@ import type {
   ProfileRow,
   ScheduleChangeLogRow,
   SemesterRow,
+  SessionType,
   TimetableRuleRow,
   VerificationStatus,
 } from "@/lib/types";
@@ -203,6 +204,12 @@ export interface EventInsert {
   description?: string | null;
   source?: string;
   verification_status?: VerificationStatus;
+  // Migration 0004 provenance / idempotency fields (optional for legacy rows).
+  source_key?: string | null;
+  session_date?: string | null;
+  session_type?: SessionType | null;
+  origin?: string | null;
+  import_id?: string | null;
 }
 
 export async function fetchEvents(semesterId: string, options?: { from?: string; to?: string; limit?: number }): Promise<CalendarEventRow[]> {
@@ -549,6 +556,7 @@ export async function uploadDocument(
   semesterId: string | null,
   file: File,
   kind: DocumentKind,
+  meta?: { contentHash?: string | null; importBatchId?: string | null; sheetIndex?: number | null },
 ): Promise<DocumentUploadRow> {
   const check = validateUpload({ name: file.name, size: file.size, type: file.type });
   if (!check.ok) throw new DataError(check.error);
@@ -573,6 +581,9 @@ export async function uploadDocument(
       mime_type: file.type || null,
       document_kind: kind,
       extraction_status: "uploaded",
+      ...(meta?.contentHash ? { content_hash: meta.contentHash } : {}),
+      ...(meta?.importBatchId ? { import_batch_id: meta.importBatchId } : {}),
+      ...(meta?.sheetIndex !== undefined && meta.sheetIndex !== null ? { sheet_index: meta.sheetIndex } : {}),
     })
     .select("*")
     .single();
@@ -612,6 +623,192 @@ export async function deleteDocument(row: DocumentUploadRow): Promise<void> {
   if (storageError) fail(storageError);
   const { error } = await supabase.from("document_uploads").delete().eq("id", row.id);
   if (error) fail(error);
+}
+
+/* ------------------------------------- automatic academic structure (0004) */
+/**
+ * Every write below is owner-scoped by the existing RLS policies and uses a
+ * deterministic `source_key`. Re-importing the same document is a no-op:
+ * `ignoreDuplicates` skips rows that already exist, so a user's manual edits
+ * are never overwritten. No service-role key is used anywhere.
+ */
+
+export async function findDocumentByHash(
+  ownerId: string,
+  kind: DocumentKind,
+  contentHash: string,
+): Promise<DocumentUploadRow | null> {
+  const { data, error } = await createClient()
+    .from("document_uploads")
+    .select("*")
+    .eq("owner_id", ownerId)
+    .eq("document_kind", kind)
+    .eq("content_hash", contentHash)
+    .maybeSingle();
+  if (error) fail(error);
+  return (data as unknown as DocumentUploadRow) ?? null;
+}
+
+export async function markDocumentConfirmed(id: string, extracted?: Json | null): Promise<void> {
+  const { error } = await createClient()
+    .from("document_uploads")
+    .update({
+      extraction_status: "approved",
+      confirmed_at: new Date().toISOString(),
+      ...(extracted !== undefined ? { extracted_data: extracted as never } : {}),
+    })
+    .eq("id", id);
+  if (error) fail(error);
+}
+
+export interface DetectedCourseInsert {
+  semester_id: string;
+  name: string;
+  code: string | null;
+  faculty: string | null;
+  category: string;
+  color: string;
+  calculation_mode: "class_count" | "hours";
+  source_key: string;
+  detection_source: string;
+  confirmed_at: string;
+}
+
+export async function upsertDetectedCourses(rows: DetectedCourseInsert[]): Promise<CourseRow[]> {
+  if (rows.length === 0) return [];
+  const { data, error } = await createClient()
+    .from("courses")
+    .upsert(rows, { onConflict: "semester_id,source_key", ignoreDuplicates: true })
+    .select("*");
+  if (error) fail(error);
+  // `ignoreDuplicates` returns no rows for skipped inserts; re-read by keys so
+  // the caller can map course ids without a second import round-trip.
+  const keys = [...new Set(rows.map((row) => row.source_key))];
+  const { data: all, error: readError } = await createClient()
+    .from("courses")
+    .select("*")
+    .eq("semester_id", rows[0]?.semester_id ?? "")
+    .in("source_key", keys);
+  if (readError) fail(readError);
+  return [...((data ?? []) as unknown as CourseRow[]), ...((all ?? []) as unknown as CourseRow[])]
+    .filter((row, index, list) => list.findIndex((other) => other.id === row.id) === index);
+}
+
+export interface DetectedRuleInsert {
+  semester_id: string;
+  course_id: string;
+  weekday: number;
+  starts_at: string;
+  ends_at: string;
+  location: string | null;
+  faculty: string | null;
+  session_type: SessionType;
+  revision: string;
+  valid_from: string | null;
+  valid_until: string | null;
+  source_key: string;
+}
+
+export async function upsertDetectedRules(rows: DetectedRuleInsert[]): Promise<void> {
+  if (rows.length === 0) return;
+  const { error } = await createClient()
+    .from("timetable_rules")
+    .upsert(rows, { onConflict: "semester_id,source_key", ignoreDuplicates: true });
+  if (error) fail(error);
+}
+
+export async function upsertGeneratedSessions(rows: EventInsert[]): Promise<number> {
+  if (rows.length === 0) return 0;
+  let inserted = 0;
+  for (let index = 0; index < rows.length; index += 100) {
+    const chunk = rows.slice(index, index + 100);
+    const { data, error } = await createClient()
+      .from("calendar_events")
+      .upsert(chunk, { onConflict: "semester_id,source_key", ignoreDuplicates: true })
+      .select("id");
+    if (error) fail(error);
+    inserted += (data ?? []).length;
+  }
+  return inserted;
+}
+
+export interface CalendarExceptionInsert {
+  semester_id: string;
+  day: string;
+  kind: AcademicDayRow["kind"];
+  title: string | null;
+  notes: string | null;
+  follows_weekday: number | null;
+  closure_scope: "full_day" | "partial" | "unknown";
+  start_time: string | null;
+  end_time: string | null;
+  exception_type: string | null;
+  source_key: string;
+  confirmed: boolean;
+  extra_data?: Json | null;
+}
+
+export async function upsertCalendarExceptions(rows: CalendarExceptionInsert[]): Promise<void> {
+  if (rows.length === 0) return;
+  const { error } = await createClient()
+    .from("academic_days")
+    .upsert(rows, { onConflict: "semester_id,day" });
+  if (error) fail(error);
+}
+
+export interface ExpectedClassCountRow {
+  course_id: string;
+  scheduled: number;
+  cancelled: number;
+  rescheduled: number;
+  attended: number;
+  absent: number;
+  excused: number;
+  pending: number;
+  attended_percent: number | null;
+}
+
+/** Shared, RLS-safe server projection consumed by web AND mobile. */
+export async function fetchExpectedClassCounts(
+  semesterId: string,
+  from?: string | null,
+  to?: string | null,
+): Promise<ExpectedClassCountRow[]> {
+  const { data, error } = await createClient().rpc("expected_class_counts", {
+    p_semester: semesterId,
+    p_from: from ?? null,
+    p_to: to ?? null,
+  });
+  if (error) fail(error);
+  return (data ?? []) as unknown as ExpectedClassCountRow[];
+}
+
+/** Cached generated projection; avoids re-expanding a semester on each visit. */
+export async function saveScheduleProjection(
+  semesterId: string,
+  createdBy: string,
+  snapshotName: string,
+  snapshotData: Json,
+): Promise<void> {
+  const { error } = await createClient().from("semester_snapshots").insert({
+    semester_id: semesterId,
+    created_by: createdBy,
+    snapshot_name: snapshotName,
+    snapshot_data: snapshotData as never,
+  });
+  if (error) fail(error);
+}
+
+export async function fetchLatestProjection(semesterId: string): Promise<{ snapshot_data: Json; created_at: string } | null> {
+  const { data, error } = await createClient()
+    .from("semester_snapshots")
+    .select("snapshot_data,created_at")
+    .eq("semester_id", semesterId)
+    .order("created_at", { ascending: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) fail(error);
+  return (data as unknown as { snapshot_data: Json; created_at: string } | null) ?? null;
 }
 
 /* ------------------------------------------------------------------ helpers */

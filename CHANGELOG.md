@@ -1,5 +1,39 @@
 # Changelog
 
+## 2026-11-03 — Automatic academic-structure detection & class calculation
+
+- New 8-step web wizard at `/academic` (`components/academic-structure.tsx`),
+  dashboard overview (`components/academic-overview.tsx`), sidebar/onboarding
+  links, and proxy auth guard for the new private route.
+- New pure shared core `packages/attendly-core` (timetable/calendar
+  interpretation, date arithmetic, class-count engine, deterministic source
+  keys, verbatim canonical attendance rules). Web `lib/academic/*` are now thin
+  re-export shims; `apps/mobile/src/lib/academic/*` is the Android/iOS adapter
+  with the same RPC and source keys. `tests/mobile-parity.test.ts` proves
+  identical results.
+- Local format adapters: OOXML `.xlsx` via `fflate`, PDF text-layer parser,
+  local Tesseract OCR with vendored/gitignored assets (`npm run vendor:ocr`),
+  SHA-256 document hashing and a manual paste fallback. CSP gained only
+  `'wasm-unsafe-eval'`; no `unsafe-eval`, no CDN, no extraction service.
+- Additive live migrations `20261103114905_academic_structure_detection`,
+  `20261103115030_academic_structure_upsert_indexes`,
+  `20261103115301_academic_exception_payload` (local mirrors `0004`–`0006`):
+  25 new columns (24 in `0004` + `extra_data` in `0006`), 9 non-partial indexes, and
+  the RLS-safe `expected_class_counts` RPC. No policy, grant, Auth setting, API
+  key, Storage object or production row was changed or deleted.
+- Several exceptions on one date share a single `academic_days` row via
+  `extra_data.exceptions`; repeated uploads are idempotent via `source_key` +
+  `ignoreDuplicates`.
+- Verification: typecheck, lint (0 warnings), `npm test` 119 TS + 6 legacy =
+  125 passing, build 29 routes, `npm audit --omit=dev` 0 vulnerabilities,
+  local HTTP/CSP smoke, and rolled-back live SQL validation of the persistence
+  payload and RPC (no test rows remain). Live: 42 policies, 0 RLS-off, 9/9 new
+  indexes, row census unchanged.
+- Not done / not claimed: mobile UI screens or APK, real-account browser E2E,
+  production deployment, DNS, `main` merge, offline OCR, scanned-PDF OCR, or
+  any attendance-rule change. See `docs/ACADEMIC_STRUCTURE.md` and
+  `KNOWN_ISSUES.md`.
+
 ## 2026-11-03 — Clear the remaining Supabase privilege gaps (all API roles)
 
 `0002` fixed signed-in pages but left `anon=Dxtm` and `service_role=Dxtm` on all

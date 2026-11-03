@@ -1,0 +1,23 @@
+{
+  "name": "@attendly/core",
+  "version": "1.0.0",
+  "private": true,
+  "type": "module",
+  "description": "Pure, platform-independent academic structure, timetable interpretation and class-count engine shared by the Attendly website and Android/iOS app.",
+  "main": "./src/index.ts",
+  "types": "./src/index.ts",
+  "exports": {
+    ".": "./src/index.ts",
+    "./attendance": "./src/attendance.ts",
+    "./dates": "./src/dates.ts",
+    "./engine": "./src/engine.ts",
+    "./calendar": "./src/calendar.ts",
+    "./grid": "./src/grid.ts",
+    "./text": "./src/text.ts",
+    "./types": "./src/types.ts"
+  },
+  "sideEffects": false,
+  "scripts": {
+    "typecheck": "tsc --noEmit"
+  }
+}

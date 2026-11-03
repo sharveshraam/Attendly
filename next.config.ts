@@ -28,7 +28,10 @@ const securityHeaders = [
       "img-src 'self' data: blob:",
       "font-src 'self' data:",
       "style-src 'self' 'unsafe-inline'",
-      "script-src 'self' 'unsafe-inline'",
+      // `wasm-unsafe-eval` is required only to compile the same-origin
+      // Tesseract WASM core used by local (offline-network) image OCR. No
+      // remote script or eval is permitted anywhere in the app.
+      "script-src 'self' 'unsafe-inline' 'wasm-unsafe-eval'",
       "worker-src 'self'",
       "manifest-src 'self'",
       "connect-src 'self' https://*.supabase.co wss://*.supabase.co",

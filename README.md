@@ -2,6 +2,23 @@
 
 Attendly is a responsive academic companion starter built with Next.js, TypeScript and Supabase. The architecture is designed for a full-featured attendance, calendar, collaboration and student productivity product.
 
+## Automatic academic structure (2026-11-03)
+
+Attendly can now detect a semester's whole academic structure from a timetable
+and academic calendar: courses/codes/faculty, weekly schedules, holidays,
+special working Saturdays, replacement timetables, one-off classes and
+cancellations. An 8-step review-and-confirm wizard (`/academic`) shows every
+detected course with the original extracted text; the dashboard is populated
+only after confirmation. Expected class counts are generated from real dates by
+one pure engine shared by the website and the Android/iOS app
+(`packages/attendly-core`), never `weeks × weekly count`. A timetable entry is
+never treated as a conducted class.
+
+All extraction is local (CSV/Excel, PDF text layer, local OCR, pasted text);
+there is no extraction service, Edge Function or service-role key. The live
+Supabase schema was extended by three tested additive migrations only — see
+`docs/ACADEMIC_STRUCTURE.md` for design, verification and honest limits.
+
 ## Current website status (2026-11-03)
 
 The website is now a full Next.js 16 App Router application at the repository
@@ -37,7 +54,8 @@ Vercel deployments of this branch are `READY` at
 Protection is on, so a Vercel login is required). No custom domain, DNS change,
 `main` merge or production data test was performed.
 
-Start here: `docs/SETUP.md`, `docs/TESTING.md`, `docs/DEPLOYMENT.md`. Architecture,
+Start here: `docs/SETUP.md`, `docs/TESTING.md`, `docs/DEPLOYMENT.md`,
+`docs/ACADEMIC_STRUCTURE.md`. Architecture,
 decisions, limits and handoff: `ARCHITECTURE.md`, `TECH_DECISIONS.md`,
 `KNOWN_ISSUES.md`, `AGENT_HANDOFF.md`, `SECURITY.md`, `CHANGELOG.md`,
 `ATTENDLY_PROGRESS.md` (section "Website Development Progress").

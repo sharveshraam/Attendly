@@ -6,7 +6,7 @@ import { usePathname, useRouter } from "next/navigation";
 import {
   Activity, BarChart3, Bell, BookOpen, CalendarDays, Check, ChevronDown, ClipboardList,
   Command, Home, LayoutGrid, LogOut, Menu, Moon, RefreshCw, Search, Settings2, ShieldCheck,
-  Sparkles, Sun, Users, WifiOff, X, Laptop,
+  Sparkles, Sun, Users, WifiOff, X, Laptop, WandSparkles,
 } from "lucide-react";
 import { useWorkspace } from "@/hooks/use-workspace";
 import { useTheme } from "@/components/theme-provider";
@@ -19,6 +19,7 @@ import { clearPrivateCache } from "@/lib/offline";
 
 const NAV = [
   { label: "Home", href: "/home", icon: Home },
+  { label: "Academic structure", href: "/academic", icon: WandSparkles },
   { label: "Calendar", href: "/calendar", icon: CalendarDays },
   { label: "Courses", href: "/courses", icon: BookOpen },
   { label: "Attendance", href: "/attendance", icon: Activity },

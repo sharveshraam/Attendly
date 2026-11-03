@@ -18,6 +18,8 @@
   settings, notifications, analytics, assistant, offline/PWA assets, charts
   (teal trend lines + champagne target markers) and course colour arrays
   (`lib/theme.ts`). Teal buttons now carry obsidian text.
+- Added `public/icons/notification-glyph.svg` (obsidian tile + teal
+  calendar-check) wired into in-tab class reminders.
 - Regenerated `public/app-icon.svg` and all four PNG icons as an obsidian tile
   with a teal calendar-check; updated `app/manifest.ts`, `public/offline.html`,
   `app/layout.tsx` metadata and the legacy `app/globals.css` stub. No legacy accent

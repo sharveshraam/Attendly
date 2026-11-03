@@ -91,6 +91,7 @@ export function AppShell({ children }: { children: React.ReactNode }) {
         new Notification("Class starting soon", {
           body: `${next.event.title} at ${new Date(next.event.starts_at).toLocaleTimeString([], { hour: "2-digit", minute: "2-digit" })}${next.event.location ? ` · ${next.event.location}` : ""}`,
           tag: `attendly-${next.event.id}`,
+          icon: "/icons/notification-glyph.svg",
         });
       } catch { /* ignore */ }
     }, delay);

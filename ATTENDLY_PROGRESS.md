@@ -209,7 +209,8 @@ additive; all earlier sections above are preserved verbatim._
   centralised in `lib/theme.ts` (teal shades + three semantic accents, no
   rainbow).
 - Website/PWA equivalents of the native touches: obsidian app icon, adaptive and
-  splash/notification glyph with a teal calendar-check on deep obsidian; dark
+  splash/notification glyph with a teal calendar-check on deep obsidian, plus
+  a dedicated `notification-glyph.svg` used by in-tab reminders; dark
   theme/status-bar colours. Android status/navigation-bar notes were design
   context only — the Android app was not modified.
 - **No legacy accent colour** remains: `app/web.css`, legacy `app/globals.css`, manifest,

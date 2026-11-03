@@ -173,3 +173,14 @@ Docs: `apps/mobile/README.md` and `apps/mobile/docs/{ARCHITECTURE,BACKEND_MAPPIN
 - Expo project Preview environment now has `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` configured (both are browser-safe public client settings protected by RLS; no secret/service-role key was used).
 - Triggered Android Preview / internal distribution build from `arena/7b693859-attendly`, base `/apps/mobile`, build ID `a84e4c38-b4cc-44b1-8b38-023a82dc720c`, Git commit `0d18531`. Expo status was **in progress**, with Metro bundle complete and Gradle `:app:assembleRelease` running at last check. Check Expo build page for final success/failure and artifact URL.
 - iOS device build remains pending separate Apple signing setup. No production/store build was requested.
+
+
+## Android Preview build completed — 2026-11-03
+
+- Expo EAS Android internal-distribution Preview build **succeeded**: [build details](https://expo.dev/accounts/sharveshraams-team/projects/attendly/builds/a84e4c38-b4cc-44b1-8b38-023a82dc720c). Artifact type: **APK** (installable on Android devices for internal testing; not submitted to Google Play).
+- Direct artifact download: [Attendly Android APK](https://expo.dev/artifacts/eas/3yG1IBazpFiiHCK7YpCIigSLalYeiRNrv126IUqZokM.apk). Expo's install dialog also provides a QR code and device install link.
+- Build input: branch `arena/7b693859-attendly`, commit `0d18531efff2663e40628897003b391edf88b379`, Android Preview profile, Preview environment, app version `1.0.0 (1)`, Expo SDK `58.0.0`. JavaScript bundling, Android release lint, Gradle `:app:assembleRelease`, APK packaging and artifact upload all completed successfully. Gradle emitted deprecation/manifest warnings but no build errors.
+- Android signing credentials were saved to the Expo project credential store. The user explicitly approved creating/managing the upload key. The password and private key are intentionally omitted from this public file; a local backup is in ignored `.private-signing/` within the mobile build checkout. Google Play submission was not enabled.
+- Expo Preview environment has the public Supabase URL and publishable client key configured; no service-role key is used by the app build.
+- **iOS remains unbuilt.** No Apple signing credentials or developer-account authorization are configured. An iOS device-installable build will require Apple distribution signing. No iOS build or App Store submission has been triggered.
+- Next: start the iOS device build after Apple signing is available (or define a simulator-only build profile if only an iOS Simulator artifact is needed); separately verify the Android APK on a physical device and record any runtime issues.

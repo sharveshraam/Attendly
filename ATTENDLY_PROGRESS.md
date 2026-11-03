@@ -141,6 +141,59 @@ Docs: `apps/mobile/README.md` and `apps/mobile/docs/{ARCHITECTURE,BACKEND_MAPPIN
 
 ---
 
+## Expo cloud build setup — 2026-11-03
+
+- Expo account is signed in as `sharveshraam`; Expo project `@sharveshraams-team/attendly` is linked to GitHub repository `sharveshraam/Attendly`.
+- Expo GitHub build base directory was set to `/apps/mobile` and saved. This correctly points Expo to the mobile app subfolder.
+- Expo project ID (from Expo project details): `0788683a-5c80-4995-9831-70289c4332a9`. This ID was added to `apps/mobile/app.json` (`expo.extra.eas.projectId`) in commit [`5798072`](https://github.com/sharveshraam/Attendly/commit/5798072793177b69fa62c4d58ed097447ec2d27a).
+- Expo Build dashboard has no Android or iOS builds yet. Selected settings for the intended first build: branch `arena/7b693859-attendly`, Android, profile `preview`, environment `Preview`, base directory `/apps/mobile`; automatic app-store submission remains off.
+- Expo warns there are no Android signing credentials and that a build without them will fail. Its browser credential wizard requires uploading a `.jks/.p12` file and entering the keystore/key passwords; it does not offer automatic generation in that form. User explicitly approved Expo creating/managing the Android key. No keystore has been generated/uploaded and no password was entered.
+- No build has been triggered yet. iOS credentials are also not configured; Apple signing will be a separate step. No app-store submission has been requested.
+- Next: establish managed Android signing credentials using an appropriate secure setup path, then run Android preview build; subsequently configure iOS credentials/build. Keep passwords and keystore contents out of this file and chat.
+- Expo GitHub builds documentation notes first successful CLI builds are a prerequisite before using GitHub build integration. Source: https://docs.expo.dev/build/building-from-github/.
+
+
+## Follow-up build preparation — 2026-11-03
+
+- Local workspace now has a sparse checkout of `arena/7b693859-attendly` under `attendly-app/attendly-mobile-build`; the web app directory was left unchanged.
+- Downloaded the official portable Node.js 24.22.2 distribution into this workspace (no system-wide install). Dependencies installed from the checked-in `package-lock.json` (1,152 packages).
+- Local verification: `tsc --noEmit` passed; Jest passed **67/67 tests across 6 suites**.
+- npm reported **33 dependency audit findings** (1 low, 32 moderate); dependency versions were not changed during this build attempt.
+- Local mobile `.env.local` is configured from the existing private local Supabase client config; it remains git-ignored.
+- A signing keystore was generated locally for `com.sharveshraam.attendly` after the user approved Android signing setup. Keystore and random password are saved locally under ignored `.private-signing/`; neither has been uploaded to Expo or pushed to GitHub. Do not copy the password or private key into this file.
+- Expo web credential wizard requires choosing/uploading a JKS/P12 and entering its passwords; it does not provide the automatic generation option. The browser file picker could not be opened through the available controls, so the keystore is not yet stored on Expo and no Android cloud build has been triggered.
+- Expo project is linked to ID `0788683a-5c80-4995-9831-70289c4332a9`; app.json metadata has been updated. GitHub build profile intended: preview; auto-submit to stores is off.
+- Remaining: securely upload the local keystore to Expo using the visible credentials form (or run authenticated Expo CLI and let EAS generate/store credentials), then start Android preview; separately set up Apple signing and build iOS. No store submissions have occurred.
+
+
+## Preview build update — 2026-11-03
+
+- Android signing credentials have now been saved to Expo for application ID `com.sharveshraam.attendly` (key alias `attendly`). The password is intentionally not documented or committed; a local backup remains under ignored `.private-signing/` in the build checkout.
+- Google Play service-account key was skipped; it is only needed for automated Play Store submission. No store submission has happened.
+- Expo project Preview environment now has `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` configured (both are browser-safe public client settings protected by RLS; no secret/service-role key was used).
+- Triggered Android Preview / internal distribution build from `arena/7b693859-attendly`, base `/apps/mobile`, build ID `a84e4c38-b4cc-44b1-8b38-023a82dc720c`, Git commit `0d18531`. Expo status was **in progress**, with Metro bundle complete and Gradle `:app:assembleRelease` running at last check. Check Expo build page for final success/failure and artifact URL.
+- iOS device build remains pending separate Apple signing setup. No production/store build was requested.
+
+
+## Android Preview build completed — 2026-11-03
+
+- Expo EAS Android internal-distribution Preview build **succeeded**: [build details](https://expo.dev/accounts/sharveshraams-team/projects/attendly/builds/a84e4c38-b4cc-44b1-8b38-023a82dc720c). Artifact type: **APK** (installable on Android devices for internal testing; not submitted to Google Play).
+- Direct artifact download: [Attendly Android APK](https://expo.dev/artifacts/eas/3yG1IBazpFiiHCK7YpCIigSLalYeiRNrv126IUqZokM.apk). Expo's install dialog also provides a QR code and device install link.
+- Build input: branch `arena/7b693859-attendly`, commit `0d18531efff2663e40628897003b391edf88b379`, Android Preview profile, Preview environment, app version `1.0.0 (1)`, Expo SDK `58.0.0`. JavaScript bundling, Android release lint, Gradle `:app:assembleRelease`, APK packaging and artifact upload all completed successfully. Gradle emitted deprecation/manifest warnings but no build errors.
+- Android signing credentials were saved to the Expo project credential store. The user explicitly approved creating/managing the upload key. The password and private key are intentionally omitted from this public file; a local backup is in ignored `.private-signing/` within the mobile build checkout. Google Play submission was not enabled.
+- Expo Preview environment has the public Supabase URL and publishable client key configured; no service-role key is used by the app build.
+- **iOS remains unbuilt.** No Apple signing credentials or developer-account authorization are configured. An iOS device-installable build will require Apple distribution signing. No iOS build or App Store submission has been triggered.
+- Next: start the iOS device build after Apple signing is available (or define a simulator-only build profile if only an iOS Simulator artifact is needed); separately verify the Android APK on a physical device and record any runtime issues.
+
+
+## iOS build check — 2026-11-03
+
+- Checked Expo's iOS build and project-credentials setup for bundle ID `com.sharveshraam.attendly`. Expo confirms there are **no iOS build credentials stored** for this project; the existing `preview` profile requests internal device distribution.
+- Expo's credential setup requires Apple distribution signing materials, including a distribution certificate and provisioning profile. No Apple credentials were supplied/configured, and no iOS build was started. Expo Submit remains unchecked; nothing was submitted to the App Store.
+- The Android Preview APK is complete and linked above. To produce a phone-installable iOS IPA, configure Apple signing for this bundle identifier in Expo, then rerun the iOS Preview build. A simulator-only artifact would require an explicit simulator build profile and would not be installable on iPhones/iPads.
+
+---
+
 # Mobile — Android launch fix + "Obsidian Academic" redesign (v1.1.0)
 
 Branch `arena/7b693859-attendly`. Append-only; prior sections preserved. No backend schema, RLS, auth, or storage changes were made in this pass.
@@ -168,9 +221,12 @@ Replaced the violet-gradient identity with **Obsidian Academic**: backgrounds `#
 - `tsc --noEmit` clean; **67 tests / 6 suites passing**; Android + iOS Metro bundles exported.
 - Added `expo-updates` (retry/reload) and `expo-navigation-bar` (Android nav polish).
 
-## APK delivery — honest status
+## APK delivery — status
 
-A native, installable APK **cannot be compiled in this sandbox**: no Java/Android SDK/Gradle, and `dl.google.com`, `repo.maven.apache.org`, and `services.gradle.org` are network-blocked. The JS/Metro layer is fully verified (config + theme embedded). To produce the signed APK, run on a machine with the toolchain or EAS:
-- **EAS (recommended):** `eas build --platform android --profile preview` (APK) or `--profile production` (AAB). The `env` in `eas.json` guarantees the config is embedded.
+This sandbox cannot compile a native APK **locally** (no Java/Android SDK/Gradle; `dl.google.com`, `repo.maven.apache.org`, `services.gradle.org` are network-blocked). However, **EAS cloud builds are set up** (see the Expo build sections above): the Expo project is linked (`projectId` preserved in `app.json`), Android signing credentials are stored on Expo, and the Preview environment holds the public Supabase URL + publishable key. A **v1.0.0** Preview APK was already built that way — but it is the old violet design and predates the source-level config fix.
+
+To deliver the redesigned, config-guaranteed app, **trigger a new EAS Android build from this branch (v1.1.0)**:
+- **EAS (recommended):** `eas build --platform android --profile preview` (APK) or `--profile production` (AAB). Config is now embedded three ways (committed `.env`, `eas.json` `env`, and the Expo Preview environment), so the new APK cannot show the config screen.
 - **Local:** `npx expo run:android --variant release` (requires JDK 17 + Android SDK).
-See `apps/mobile/docs/BUILD.md`. On-device/emulator testing was not possible here and is not claimed.
+
+See `apps/mobile/docs/BUILD.md`. The existing v1.0.0 APK does not contain this redesign; rebuild to get v1.1.0. On-device testing of the new build has not been performed here and is not claimed.

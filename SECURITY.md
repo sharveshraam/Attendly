@@ -20,6 +20,15 @@ _Last updated: 2026-11-03._
 - **RLS is the authority.** Every read/write in `lib/data.ts` goes through the
   browser client; there is no server-side bypass. `proxy.ts` and
   `app/(app)/layout.tsx` are routing guards, not authorization.
+- **Table privileges are also required.** PostgreSQL checks table-level
+  grants before RLS. This project was created with a `postgres` default ACL that
+  omitted `arwd` for `authenticated`, so every request failed with
+  `permission denied for table …` on the website and in the mobile app. `supabase/migrations/0002_restore_authenticated_grants.sql` grants
+  SELECT/INSERT/UPDATE/DELETE on all public tables and sequences to
+  `authenticated` and repairs the `postgres` default ACL for future tables.
+  RLS stays enabled, all 42 policies are unchanged, and no grant was added
+  to `anon` or `service_role`. `tests/db-grants.test.ts` guards against removing the grants, disabling RLS
+  or widening the fix to `anon`/`service_role`.
 - `attendance_records` queries always filter by `user_id`; writes include the
   caller's own `user_id`. Group pages never query attendance records.
 - `profiles` is self-select only. Other group members are rendered as

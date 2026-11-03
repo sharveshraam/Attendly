@@ -5,9 +5,11 @@
 - Node.js **22+** (verified on 22.22.3) and npm 10+.
 - Access to the existing live Supabase project `Attendly`
   (ref `gavlxbxgxdormbfhtzlo`, `ap-south-1`). **Do not create a second project,
-  re-run the migration, or change RLS/Storage settings.** The owner-approved
-  additive Auth redirect allow-list is already applied; `site_url` and every
-  other Auth setting are unchanged.
+  re-run migration `0001`, or change RLS/Storage settings.** The
+  owner-approved additive Auth redirect allow-list is already applied;
+  `site_url` and every other Auth setting are unchanged. The `authenticated`
+  table grants were restored by `0002_restore_authenticated_grants.sql` — do
+  not revoke them.
 - A copy of `.env.example` → `.env.local` with the project's **public** URL and
   publishable key. These are browser-safe values; authorisation is RLS.
 
@@ -37,6 +39,21 @@ browser code.
 If env vars are missing, public pages still render and authenticated routes show
 an explicit "Supabase is not configured for this deployment" state instead of
 fake data.
+
+## Database grants (fixed 2026-11-03)
+
+`0001_attendly_core.sql` enables RLS and creates 42 `authenticated` policies, but
+this Supabase project's `postgres` default ACL had no SELECT/INSERT/UPDATE/DELETE
+for the API roles. PostgREST rejected every request with
+`permission denied for table semesters` before RLS ran — on the website **and**
+the mobile app, because both use the same project.
+
+`supabase/migrations/0002_restore_authenticated_grants.sql` (already applied to
+the live project) grants DML on all public tables/sequences to `authenticated`
+and fixes the default ACL for future tables. RLS and every policy are unchanged;
+`anon` and `service_role` were not widened. If you create a fresh project from
+`0001`, apply `0002` immediately afterwards. `tests/db-grants.test.ts` guards
+the file.
 
 ## Supabase link and Auth origins
 
@@ -71,7 +88,7 @@ npm run build        # production build
 npm run start        # serve the production build, 0.0.0.0:3000
 npm run typecheck    # tsc --noEmit
 npm run lint         # eslint .
-npm test             # 74 TypeScript + 6 legacy tests
+npm test             # 77 TypeScript + 6 legacy tests
 npm run test:legacy  # original 6 attendance tests only
 ```
 

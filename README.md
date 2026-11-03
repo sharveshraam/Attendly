@@ -17,13 +17,16 @@ typography, crisp 1px borders and subtle screen fades across every screen,
 chart, icon and offline asset. No legacy accent colour remains in source
 or the built bundle.
 
-Verified: `npm run typecheck`, `npm run lint`, `npm test` (80/80),
+Verified: `npm run typecheck`, `npm run lint`, `npm test` (83/83),
 `npm run build`, `npm audit --omit=dev` (0 vulnerabilities) and HTTP/header
 smoke checks. The local frontend is linked to the live Supabase project through
 the ignored `.env.local`, and the owner-approved additive Auth redirect
 allow-list now covers the Arena and Vercel preview origins (`site_url` and every
 other Auth setting unchanged). No migration, schema, RLS, Storage or Edge
-Function change was made. Vercel deployments of this branch are `READY` at
+Function change was made; `0002_restore_authenticated_grants.sql` restores the
+missing `authenticated` table grants (RLS and all 42 policies intact), which
+fixes `permission denied for table …` on every page in both web and mobile.
+Vercel deployments of this branch are `READY` at
 `https://attendly-web-cosmic-7aae.vercel.app` and the preview URL
 `https://attendly-mmqleg474-cosmic-7aae.vercel.app` (Vercel SSO Deployment
 Protection is on, so a Vercel login is required). No custom domain, DNS change,
@@ -50,7 +53,8 @@ The Attendly project has been created in Supabase in the Mumbai region. Its proj
 1. Copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_SUPABASE_URL` plus `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to the project's API URL and publishable key. The existing local workspace already has these values in its ignored `.env.local`.
 2. Apply `supabase/migrations/0001_attendly_core.sql` once in the project's SQL Editor or through the Supabase CLI. It creates the core schema, RLS policies, private `academic-documents` bucket, membership RPCs, and Realtime publication entries.
 3. In Supabase Auth settings, set the local site URL to `http://localhost:3000` and add local plus production callback URLs before enabling sign-in on a hosted domain.
-4. Confirm every exposed table has RLS enabled and test a second user cannot read personal attendance or documents before adding real student data.
+4. Apply `supabase/migrations/0002_restore_authenticated_grants.sql` once. It grants SELECT/INSERT/UPDATE/DELETE on the public tables to `authenticated` (already applied to the live project). Without it PostgREST returns `permission denied for table …` before RLS is evaluated — this was the cause of the same error on the website and in the mobile app.
+5. Confirm every exposed table has RLS enabled and test a second user cannot read personal attendance or documents before adding real student data.
 
 ## Run locally
 

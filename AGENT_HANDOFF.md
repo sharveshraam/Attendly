@@ -16,8 +16,11 @@ _Last updated: 2026-11-03._
 
 - The Android app is built and deployed. **Do not touch mobile source, APK, live
   backend config, production data, or the mobile branch.**
-- No migration, schema change, RLS/Auth/Storage/Edge Function edit, service-role
-  key, production credential change or production data test.
+- No schema change, RLS/Storage/Edge Function edit, service-role key,
+  production credential change or production data test. **Exception (owner
+  explicitly requested):** `0002_restore_authenticated_grants.sql` was applied
+  to fix `permission denied for table …`; it grants only table-level DML to
+  `authenticated`, with RLS and every policy unchanged.
 - No production deployment, DNS change, irreversible infrastructure change or
   `main` merge without explicit authorisation. Preview is allowed.
 - The additive Supabase Auth redirect allow-list change was approved and
@@ -32,13 +35,18 @@ _Last updated: 2026-11-03._
   timetable, attendance tools, groups (schedule-only), productivity, analytics/
   exports, deterministic assistant, notifications, settings, PWA/offline,
   settings-managed local data and conflict resolution.
-- 80/80 tests, typecheck, lint, production build, production dependency audit
-  and HTTP/header smoke checks all pass. See `docs/TESTING.md`.
+- 83/83 tests (77 TypeScript + 6 legacy), typecheck, lint, production build,
+  production dependency audit and HTTP/header smoke checks all pass. See
+  `docs/TESTING.md`.
 - Commit `dad29f2` and `392d0d8` pushed to `origin/arena/6fedf57b-attendly`.
 - **Obsidian Academic** dark-first identity across all screens, charts, icons,
   manifest and offline assets; no legacy accent colour in source or built bundle.
 - Local frontend linked to the live Supabase project via ignored `.env.local`
   (public URL + publishable key only); approved additive Auth allow-list applied.
+- **Database access repaired:** `authenticated` now has DML grants on all 19
+  public tables; RLS and all 42 policies intact. Fixes `permission denied for
+  table semesters` for both web and mobile. See `docs/AUDIT.md` and
+  `tests/db-grants.test.ts`.
 - Vercel project `attendly-web` created with the two public env vars.
 - Local production server on `0.0.0.0:3000` is the Arena live preview.
 - Vercel deployments `dpl_GgaeYpWKRUT7d5u6dvQkha6s2YfT` (`aa7dd73`) and
@@ -91,3 +99,6 @@ _Last updated: 2026-11-03._
 - `.env.example` has placeholders only. Never commit real keys; the publishable
   key is browser-safe but the progress/handoff rules say not to copy it into
   public docs.
+- Do not revoke the `authenticated` table grants. `tests/db-grants.test.ts`
+  fails if `0002_restore_authenticated_grants.sql` stops granting DML, disables
+  RLS, drops policies, or widens access to `anon` / `service_role`.

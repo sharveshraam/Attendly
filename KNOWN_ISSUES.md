@@ -3,6 +3,18 @@
 _Last updated: 2026-11-03._ Nothing in this file is "complete but undocumented".
 Features with a missing backend dependency are explicitly listed as unavailable.
 
+## Resolved — database access (2026-11-03)
+
+- **`permission denied for table semesters` on every page, in the website and
+  the mobile app.** Cause: `authenticated` had no table-level DML grants; RLS was
+  never reached. Fixed by `0002_restore_authenticated_grants.sql` (grants only —
+  RLS and all 42 policies untouched). Verified with an in-transaction
+  `SET LOCAL ROLE authenticated` + JWT: reads are owner-scoped, rolled-back
+  writes succeeded across 19 tables, and no test data remains. The mobile app
+  needed no source change because it uses the same Supabase project.
+
+
+
 ## Hosted deployment / owner-authorization items
 
 1. **Vercel hosted deployment exists but is externally unverified.** Two early

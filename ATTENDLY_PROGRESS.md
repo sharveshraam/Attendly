@@ -246,7 +246,7 @@ additive; all earlier sections above are preserved verbatim._
   remains unapproved.
 
 ### Verification for this milestone
-- `npm run typecheck`, `npm run lint`, `npm test` (80/80), `npm run build`,
+- `npm run typecheck`, `npm run lint`, `npm test` (83/83), `npm run build`,
   `npm audit --omit=dev` (0 vulnerabilities), 31-path HTTP/header smoke
   (public/auth/offline/manifest/SW/icons 200; anonymous app routes correctly
   307 → `/login`), a source + built-bundle grep with zero legacy accent colour,
@@ -254,3 +254,61 @@ additive; all earlier sections above are preserved verbatim._
   the linked Supabase env. Browser auth round trips, PWA install/offline,
   responsive/theme matrix, hosted-route checks behind Vercel Deployment
   Protection and real-account E2E are **not** claimed as verified.
+
+
+## Database access fix — `permission denied for table …` (2026-11-03)
+
+### What was wrong
+Every authenticated page showed `permission denied for table semesters` (the
+screenshot from `/home`), and the deployed Android app showed the same thing.
+Root cause was **not** RLS: all 19 public tables had RLS enabled and 42 correct
+`authenticated` policies, but the project's `postgres` default ACL was
+`anon=Dxtm, authenticated=Dxtm, service_role=Dxtm`. PostgreSQL checks
+table-level privileges first, so PostgREST returned `permission denied` before
+RLS was ever evaluated. `SELECT`, `INSERT`, `UPDATE` and `DELETE` were missing
+for the API roles on all 19 tables, all 7 RPC EXECUTE grants were fine, and
+Storage already had its grants — which is why the error looked like an app bug
+but was a single database privilege gap.
+
+### What changed
+Applied `supabase/migrations/0002_restore_authenticated_grants.sql` (also
+recorded in Supabase migration history as `restore_authenticated_table_grants`):
+
+- `GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authenticated`
+- `GRANT USAGE, SELECT, UPDATE ON ALL SEQUENCES IN SCHEMA public TO authenticated`
+- `ALTER DEFAULT PRIVILEGES FOR ROLE postgres IN SCHEMA public GRANT … ON TABLES TO authenticated`
+- the same default-privilege fix for sequences so future tables do not break again
+
+**RLS stays enabled on all 19 tables; all 42 policies are unchanged.** No table,
+column, policy, row, Auth, Storage or Edge Function change. `anon` and
+`service_role` were deliberately not widened. This is the first live backend
+change and was explicitly requested by the owner ("let the users access the
+tables … clear it asap"); it is privilege-only and idempotent.
+
+### Verification against the live project
+- Privilege matrix after the fix: all 19 tables `SELECT/INSERT/UPDATE/DELETE =
+  true` for `authenticated`; `anon` still `false`; `relrowsecurity = true` on all
+  19; policy count still 42; default ACL now
+  `authenticated=arwdDxtm/postgres`.
+- `SET LOCAL ROLE authenticated` + synthetic JWT with a random UID: 10 table
+  reads succeeded with **0 rows** (no permission error, RLS still filters).
+- Same simulation with the real user UID: `auth.uid()` resolved, the user's own
+  **1 profile row** was visible, everything else 0.
+- Rolled-back write transaction inserted and read back rows across semesters,
+  courses, calendar events, attendance records, assignments, timetable rules,
+  academic days, document uploads, course resources, schedule change log,
+  notifications, notification preferences, groups, polls, votes and push
+  subscriptions — all succeeded under RLS. Post-rollback counts confirmed
+  **zero test data left** (19 tables empty apart from the 1 pre-existing
+  profile).
+- `npm run typecheck`, `npm run lint`, `npm test` (**83/83** — 77 TypeScript +
+  6 legacy), `npm run build`.
+- Added `tests/db-grants.test.ts`: 3 static guards that fail if the grants are
+  removed, RLS is disabled, policies are dropped, or the fix is widened to
+  `anon` / `service_role`.
+
+### Scope
+One backend fix resolves the error on **every page** of the website and in the
+mobile app, because both use the same Supabase project. No mobile source, APK,
+build or deployment was modified. Real-account browser sign-in/E2E is still not
+claimed as verified.

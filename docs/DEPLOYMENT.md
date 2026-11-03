@@ -5,10 +5,14 @@
 - **Preview first.** No production promotion, custom domain/DNS change,
   production database setting change or `main` merge without explicit owner
   authorisation.
-- No Supabase migration, database setting, RLS policy, Storage policy or
-  Edge Function change was made. The single **owner-approved additive** Auth
-  change is the redirect allow-list below; `site_url=http://localhost:3000` and
-  every other Auth setting are unchanged. The deployed Android app is untouched.
+- No schema change, RLS policy edit, Storage policy change, Edge Function
+  change or production data test was made. Two **owner-approved additive**
+  changes exist: the Auth redirect allow-list below (`site_url` and all other
+  Auth settings unchanged) and `0002_restore_authenticated_grants.sql`, which
+  restores the missing `authenticated` table-level DML grants without disabling
+  RLS or altering any policy. Both were needed to make the app usable. The
+  deployed Android app source is untouched; it benefits from the same backend
+  fix.
 - Only public/publishable Supabase values belong in Vercel env vars.
 
 ## Vercel project state (2026-11-03)

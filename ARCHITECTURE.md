@@ -21,11 +21,15 @@ Browser (website PWA)                Android app (unchanged)
         Storage: academic-documents (private)
 ```
 
-No migrations, schema changes, RLS policy edits, Edge Functions or Storage
-policy changes were made for the website. The only Auth change is the approved
-additive redirect allow-list; `site_url` and all other Auth settings are
-unchanged. **Obsidian Academic** is a CSS/token-level, dark-first design system
-in `app/web.css` with a locally bundled Inter font — no backend, mobile or
+No schema changes, RLS policy edits, Edge Functions or Storage policy changes
+were made for the website. Two **owner-approved additive** backend changes are
+config/privilege-only: the Auth redirect allow-list (`site_url` and all other
+Auth settings unchanged), and `0002_restore_authenticated_grants.sql`, which
+restores the missing `authenticated` table-level DML grants that caused
+`permission denied for table semesters` on every page. No table, column, policy
+or production row was altered; RLS remains enabled on all 19 tables with all 42
+policies intact. **Obsidian Academic** is a CSS/token-level, dark-first design
+system in `app/web.css` with a locally bundled Inter font — no mobile or
 infrastructure change.
 
 ## Layers

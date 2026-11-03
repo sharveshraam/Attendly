@@ -1,5 +1,40 @@
 # Changelog
 
+## 2026-11-03 — Fix `permission denied for table …` on every page (web + mobile)
+
+### Root cause
+All 19 public tables had RLS enabled and 42 correct `authenticated` policies,
+but the project's `postgres` default ACL was
+`anon=Dxtm, authenticated=Dxtm, service_role=Dxtm` — SELECT/INSERT/UPDATE/DELETE
+were absent. PostgreSQL rejects a request on privileges **before** evaluating
+RLS, so every signed-in request failed with `permission denied for table
+semesters` (and the same on all other pages). The website and the deployed
+Android app share this project, so both broke.
+
+### Fixed
+- Applied `supabase/migrations/0002_restore_authenticated_grants.sql` (also
+  tracked in Supabase migration history as
+  `restore_authenticated_table_grants`):
+  - `GRANT SELECT, INSERT, UPDATE, DELETE ON ALL TABLES IN SCHEMA public TO authenticated`
+  - sequence grants for completeness
+  - `ALTER DEFAULT PRIVILEGES FOR ROLE postgres …` so future tables keep the grants
+- **RLS stays enabled on all 19 tables; all 42 policies are unchanged.** No
+  schema, column, policy, data, Auth, Storage or Edge Function change. `anon`
+  and `service_role` were not widened.
+- Added `tests/db-grants.test.ts` (3 static regression guards).
+
+### Verified against the live project
+- Privilege matrix: all 19 tables now allow SELECT/INSERT/UPDATE/DELETE for
+  `authenticated`; `anon` still has none; RLS still `true`; policy counts unchanged.
+- Simulated `SET LOCAL ROLE authenticated` + synthetic JWT: a random UID saw 0
+  rows; the real UID saw exactly its own 1 profile row — so RLS still filters.
+- Rolled-back write transaction succeeded across semesters, courses, events,
+  attendance, assignments, timetable rules, academic days, uploads, resources,
+  change log, notifications, preferences, groups, polls, votes and push
+  subscriptions. Post-rollback row counts confirmed **zero test data left**.
+- `npm run typecheck`, `npm run lint`, `npm test` (**83/83**), `npm run build`.
+
+
 ## 2026-11-03 — Obsidian Academic + Supabase link (branch `arena/6fedf57b-attendly`)
 
 ### Changed

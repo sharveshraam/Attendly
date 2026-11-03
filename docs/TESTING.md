@@ -6,12 +6,13 @@
 | --- | --- |
 | `npm run typecheck` | pass, 0 errors |
 | `npm run lint` | pass, 0 warnings/errors |
-| `npm test` | 74 TypeScript tests + 6 legacy tests: **80/80 pass** |
+| `npm test` | 77 TypeScript tests + 6 legacy tests: **83/83 pass** |
 | `npm run test:legacy` | 6/6 pass |
 | `npm run build` | pass; 28 routes, 16 static pages, Turbopack |
 | `npm audit --omit=dev` | **0 vulnerabilities** |
 | `npm audit` (full) | 16 moderate dev-only advisories (eslint / typescript-eslint / minimatch); `npm audit fix` suggests downgrades and was not applied |
 | HTTP smoke test | 27 routes/assets returned 200, including all public/auth/app routes, `/manifest.webmanifest`, `/sw.js`, `/offline.html`, four PNG icons and the SVG icon |
+| Database grants (live, read-only) | `SET LOCAL ROLE authenticated` + synthetic JWT: random UID saw 0 rows, real UID saw only its own profile; rolled-back writes succeeded across 19 tables; zero test data left. See `docs/AUDIT.md` |
 
 > **After the Supabase link (2026-11-03):** the 10 authenticated app routes now
 > correctly return `307` → `/login?next=…` for an anonymous visitor (the server

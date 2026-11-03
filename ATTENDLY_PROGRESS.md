@@ -138,3 +138,16 @@ npx expo start
 ```
 
 Docs: `apps/mobile/README.md` and `apps/mobile/docs/{ARCHITECTURE,BACKEND_MAPPING,BUILD,PERMISSIONS,NOTIFICATIONS,OFFLINE_SYNC,TESTING,PROPOSED_BACKEND_ADDITIONS}.md`.
+
+---
+
+## Expo cloud build setup — 2026-11-03
+
+- Expo account is signed in as `sharveshraam`; Expo project `@sharveshraams-team/attendly` is linked to GitHub repository `sharveshraam/Attendly`.
+- Expo GitHub build base directory was set to `/apps/mobile` and saved. This correctly points Expo to the mobile app subfolder.
+- Expo project ID (from Expo project details): `0788683a-5c80-4995-9831-70289c4332a9`. **The mobile app config still has an empty `expo.extra.eas.projectId`**; linking this value into app configuration is still pending.
+- Expo Build dashboard has no Android or iOS builds yet. Selected settings for the intended first build: branch `arena/7b693859-attendly`, Android, profile `preview`, environment `Preview`, base directory `/apps/mobile`; automatic app-store submission remains off.
+- Expo warns there are no Android signing credentials and that a build without them will fail. Its browser credential wizard requires uploading a `.jks/.p12` file and entering the keystore/key passwords; it does not offer automatic generation in that form. User explicitly approved Expo creating/managing the Android key. No keystore has been generated/uploaded and no password was entered.
+- No build has been triggered yet. iOS credentials are also not configured; Apple signing will be a separate step. No app-store submission has been requested.
+- Next: initialize/link app with Expo Build project ID; establish managed Android signing credentials using an appropriate secure setup path, then run Android preview build; subsequently configure iOS credentials/build. Keep passwords and keystore contents out of this file and chat.
+- Expo GitHub builds documentation notes first successful CLI builds are a prerequisite before using GitHub build integration. Source: https://docs.expo.dev/build/building-from-github/.

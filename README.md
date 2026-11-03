@@ -2,6 +2,31 @@
 
 Attendly is a responsive academic companion starter built with Next.js, TypeScript and Supabase. The architecture is designed for a full-featured attendance, calendar, collaboration and student productivity product.
 
+## Current website status (2026-11-03)
+
+The website is now a full Next.js 16 App Router application at the repository
+root, sharing the **existing live Supabase project** with the deployed Android
+app. It includes the public site, email/password auth and recovery, onboarding,
+dashboard, calendar/timetable upload with human review, attendance tools,
+courses, groups (schedule-only sharing), productivity, analytics/exports,
+notifications, a deterministic on-device assistant, settings, and an installable
+PWA with an offline outbox and conflict handling. The original starter files are
+preserved; `app/web.css` is the active stylesheet.
+
+Verified: `npm run typecheck`, `npm run lint`, `npm test` (80/80),
+`npm run build`, `npm audit --omit=dev` (0 vulnerabilities) and HTTP/header
+smoke checks. No backend change was made. A Vercel project exists with the two
+public env vars, but a hosted preview is blocked by a missing Vercel ↔ GitHub
+Login Connection; no deployment is live and no production deployment occurred.
+
+Start here: `docs/SETUP.md`, `docs/TESTING.md`, `docs/DEPLOYMENT.md`. Architecture,
+decisions, limits and handoff: `ARCHITECTURE.md`, `TECH_DECISIONS.md`,
+`KNOWN_ISSUES.md`, `AGENT_HANDOFF.md`, `SECURITY.md`, `CHANGELOG.md`,
+`ATTENDLY_PROGRESS.md` (section "Website Development Progress").
+
+> The older "Implemented in the current website" paragraph below describes the
+> original starter and is superseded by this section.
+
 ## Hosting recommendation
 
 - **Frontend:** Vercel (Next.js)

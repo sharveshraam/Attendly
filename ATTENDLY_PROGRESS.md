@@ -70,3 +70,113 @@ Last updated: 2026-11-03 (Asia/Kolkata)
 - Keep secrets out of public repository files and chat. Supabase publishable keys are browser-safe by design but still must not be copied into this public handoff; service-role/database credentials are strictly private.
 - State only what was implemented and verified. Keep the current website scope and remaining work clear.
 
+
+## Website Development Progress
+
+_2026-11-03 · branch `arena/6fedf57b-attendly` · commit `dad29f2`. This section is
+additive; all earlier sections above are preserved verbatim._
+
+### What was built
+
+- **Public site:** `/` landing, `/features`, `/about`, `/privacy`, `/terms`,
+  `/support` with honest product copy (no invented statistics or testimonials).
+- **Auth:** email/password signup + confirmation, sign-in, forgot/reset password,
+  verify-email with a real `resend({type:"signup"})` action, `/auth/callback`
+  handling PKCE `code`, `token_hash`+`type` and implicit fragments, session
+  persistence, protected routes, logout, profile edit. No OAuth invented.
+- **App routes:** `/onboarding` wizard, `/home` real-data dashboard, `/calendar`
+  (month/week/day/agenda/semester, timetable rules, uploads with human review,
+  session generation, history, academic-day classification), `/courses`,
+  `/courses/[id]`, `/attendance` (mark/bunk/recovery/what-if/history),
+  `/groups`, `/groups/[id]` (shared schedule, proposals, polls, members,
+  history — never personal attendance), `/productivity`, `/analytics` (charts,
+  heatmap, risk ranking, CSV/ICS/print exports), `/assistant` (deterministic
+  on-device), `/notifications`, `/settings`.
+- **PWA / offline:** generated manifest, four PNG icons, service worker caching
+  static shell only (no API/auth/navigation/token responses), offline page,
+  install/update/offline banners, light/dark/system theme, toasts, command
+  palette, deterministic attendance outbox with optimistic-concurrency conflict
+  handling, per-user private cache cleared on sign-out.
+- **Shared logic:** canonical `lib/attendance/engine.ts` matching the mobile app
+  plus `lib/attendance-engine.js` adapter; `lib/schedule.ts`, `lib/import/csv.ts`,
+  `lib/dates.ts`, `lib/validation.ts`, `lib/reports.ts`, `lib/assistant.ts`,
+  `lib/offline.ts`, `lib/data.ts`, `lib/auth.ts`, `hooks/use-workspace.tsx`,
+  `hooks/use-now.ts`.
+- **Config / assets:** `next.config.ts` security headers + CSP, `proxy.ts` SSR
+  guard, `eslint.config.mjs`, `postcss.config.mjs`, `.env.example` placeholders,
+  `.gitignore` additions, `engines.node >=22`, `scripts/generate-icons.py`,
+  `public/app-icon.svg`, `public/sw.js`, `public/offline.html`.
+- **Docs:** `docs/AUDIT.md`, `docs/SETUP.md`, `docs/TESTING.md`,
+  `docs/DEPLOYMENT.md`, `ARCHITECTURE.md`, `TECH_DECISIONS.md`,
+  `KNOWN_ISSUES.md`, `AGENT_HANDOFF.md`, `CHANGELOG.md`, `SECURITY.md` and a
+  README status section.
+
+### Decisions
+
+- Website stays at the repository root; the existing root Next.js skeleton was
+  extended rather than duplicated into `apps/web/`.
+- **No backend change at all:** no migration, schema edit, RLS/Auth/Storage/Edge
+  Function change, production credential change or production data test. All
+  queries use the browser publishable key and existing RLS.
+- Missing services are documented, not invented: no OCR/AI extraction (zero Edge
+  Functions), no web-push sender, no `notes` table, no `assignments.priority`.
+  Notes/priority are device-local; the assistant is deterministic; notifications
+  are in-app + realtime; non-CSV uploads are private provenance only.
+- Group privacy: schedules/events only; attendance, history, analytics and bunk
+  data are never loaded in group context.
+- Offline writes use deterministic ids, base-version conflict detection and an
+  explicit keep-local/discard-local decision before any overwrite.
+- Auth redirect allow-list changes and production promotion remain owner-approval
+  gated.
+
+### Verification results
+
+- `npm run typecheck`: pass, 0 errors.
+- `npm run lint`: pass, 0 warnings/errors.
+- `npm test`: **80/80** (74 new TypeScript tests + original 6 legacy tests).
+- `npm run test:legacy`: 6/6.
+- `npm run build`: pass, Next 16.4.4 Turbopack, 28 routes / 16 static pages.
+- `npm audit --omit=dev`: **0 vulnerabilities**. Full audit: 16 moderate dev-only
+  advisories; suggested downgrades not applied.
+- HTTP smoke check: 27 routes and assets all 200, including all public/auth/app
+  routes, `/manifest.webmanifest`, `/sw.js`, `/offline.html` and four PNG icons.
+  Security headers, CSP, SW no-cache and manifest content-type verified.
+- Local production server on `0.0.0.0:3000` is the Arena live preview; the
+  unconfigured-Supabase setup state renders honestly.
+
+### Deployment status
+
+- Vercel project `attendly-web` created with the two public Supabase env vars.
+- Two Git-source deployment attempts from this branch failed at initialization
+  with `git_info_fail` and were deleted. **No deployment is live and no
+  production deployment occurred.**
+- A repository link attempt returned: "You need to add a Login Connection to your
+  GitHub account first." Hosted preview therefore waits for the owner to add
+  that connection (or authorise another deployment path). See
+  `docs/DEPLOYMENT.md`.
+- Supabase Auth allow-list still contains only localhost and the mobile deep
+  links; hosted email confirmation/reset links need an owner-approved additive
+  change. No DNS, production promotion, `main` merge or custom domain was done.
+
+### Known issues / incomplete work
+
+- Real-account integration and E2E tests (auth round trip, two-user privacy,
+  realtime, offline→reconnect conflict, CSV apply, PWA install/update,
+  responsive/theme/print matrix) were not run: no disposable test account and no
+  hosted Auth origin. Do not claim them as passing. See `KNOWN_ISSUES.md` and
+  `docs/TESTING.md`.
+- `app/globals.css` and `components/dashboard.tsx` are preserved legacy files,
+  no longer used by the active UI.
+- Remote push, server-synced notes/priority, PDF/image/Excel extraction and
+  account deletion are unavailable because the backend has no such service.
+
+### Next tasks
+
+1. Owner adds the Vercel ↔ GitHub Login Connection; create a **preview**
+   deployment from this branch and verify it.
+2. Owner approves adding the preview origin to the Supabase Auth redirect
+   allow-list; then test auth with a disposable account.
+3. Run the integration/E2E checklist with a safe test account (never production
+   data).
+4. Only after explicit approval: production promotion, DNS, `main` merge.
+5. Append the next milestone here without overwriting earlier sections.

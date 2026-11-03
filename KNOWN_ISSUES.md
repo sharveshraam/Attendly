@@ -16,15 +16,17 @@ Features with a missing backend dependency are explicitly listed as unavailable.
    connection in Vercel (or authorise an alternative deployment method) before a
    hosted preview can be built. The local production server is running as the
    Arena live preview in the meantime.
-2. **Supabase Auth redirect allow-list has no hosted origin.** Current config:
-   `site_url=http://localhost:3000`, allow-list
-   `http://localhost:3000/**`, `attendly://auth/callback`,
-   `attendly://auth/reset-password`. Email confirmation and password-reset links
-   therefore resolve to localhost until the preview/production origin is added.
-   This is an **additive** Auth config change and requires explicit owner
-   approval; it was not made. `lib/auth.ts` retries with the configured site URL
-   when GoTrue rejects a not-yet-allowed redirect, and `app/verify-email` states
-   the caveat visibly.
+2. **Resolved — preview Auth origins are allowed.** The owner approved an
+   additive allow-list change; it now contains `http://localhost:3000/**`, `attendly://auth/callback`,
+   `attendly://auth/reset-password`,
+   `https://3000-ij82xxqb0js5vttcwapbe.e2b.app/**`,
+   `https://attendly-web-cosmic-7aae.vercel.app/**`,
+   `https://attendly-web-git-arena-6fedf57b-attendly-cosmic-7aae.vercel.app/**`,
+   `https://attendly-*.vercel.app/**`.
+   `site_url` remains `http://localhost:3000` and all other Auth settings are
+   unchanged. A real hosted deployment still has to exist and be verified;
+   production origins and a production `site_url` change remain gated. Email
+   confirmation/reset round trips with a disposable account are still unverified.
 3. **Production promotion, custom domains/DNS and production data testing are
    intentionally not done.** No `main` merge, no alias promotion, no DNS edit.
 
@@ -62,7 +64,7 @@ Features with a missing backend dependency are explicitly listed as unavailable.
     (dedupe, conflicts, keep/discard, per-user cache, offline guard), and the
     service worker's cache guards have a static test. Actual SW registration,
     install prompt, update banner, offline queue → reconnect sync, responsive
-    layout and dark/light theme were not exercised in a real browser here.
+    layout and the dark-first (optional light) theme were not exercised in a real browser here.
 12. **Responsive/theme/manifest checks are code + HTTP level.** CSS media queries,
     theme bootstrap and icons exist; a manual device/browser matrix (iOS Safari
     install, Android Chrome install, 360px/768px/1440px widths, print report) is

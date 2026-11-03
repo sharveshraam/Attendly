@@ -13,7 +13,7 @@ const semester: SemesterRow = {
 };
 const course: CourseRow = {
   id: "c1", semester_id: "s1", code: "CS301", name: "Databases", category: "theory",
-  attendance_target: null, calculation_mode: "class_count", color: "#8B7CFF", created_at: "2026-09-01T00:00:00Z",
+  attendance_target: null, calculation_mode: "class_count", color: "#38B8A5", created_at: "2026-09-01T00:00:00Z",
 };
 const event: CalendarEventRow = {
   id: "e1", semester_id: "s1", group_id: null, course_id: "c1", title: "Databases",

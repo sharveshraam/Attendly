@@ -11,9 +11,10 @@ import {
 import { safeParse, assignmentSchema, courseSchema, eventSchema, semesterSchema, timetableRuleSchema } from "@/lib/validation";
 import { toDateTimeLocal, fromDateTimeLocal, WEEKDAYS } from "@/lib/dates";
 import type { AssignmentRow, CalendarEventKind, CalendarEventRow, CourseRow, SemesterRow } from "@/lib/types";
+import { COURSE_COLORS as COLORS } from "@/lib/theme";
 
 const CATEGORIES = ["theory", "lab", "practical", "tutorial", "seminar", "exam"] as const;
-const COLORS = ["#8B7CFF", "#54D6D0", "#F0BD6A", "#FF8492", "#79A9FF", "#4FD1A1", "#C792EA", "#F49AC1"];
+
 const KINDS: CalendarEventKind[] = ["class", "exam", "holiday", "deadline", "other"];
 
 function ErrorLine({ message }: { message: string }) {

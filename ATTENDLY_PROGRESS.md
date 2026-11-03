@@ -180,3 +180,62 @@ additive; all earlier sections above are preserved verbatim._
    data).
 4. Only after explicit approval: production promotion, DNS, `main` merge.
 5. Append the next milestone here without overwriting earlier sections.
+
+## Obsidian Academic + Supabase link (2026-11-03)
+
+### What changed
+- The website's whole theme is now **Obsidian Academic**: dark-first, elegant,
+  minimal and premium (Apple dark / Linear / Raycast / high-end financial
+  dashboards). Exact palette: Deep Obsidian `#090D14` background, Midnight Slate
+  `#101722` surfaces, Elevated Graphite `#182231`, tertiary `#1E2A3C`, primary text
+  `#F1F5F9`, secondary `#A5ADBA`, muted `#6E7889`, border `#263244`, dominant muted
+  teal `#38B8A5`, soft ice blue `#75B9E7` (info), warm champagne `#D5B77A`
+  (warnings/exams), muted red `#E47777` (errors/at-risk).
+- Dark is default (`color-scheme: dark`, dark theme/status-bar colour,
+  `userInterfaceStyle` dark). `html.light` remains as an optional neutral variant.
+  Inter Variable 400–800 is bundled locally so the preview needs no external
+  network; system fallback retained.
+- Editorial typography (tight display tracking, open caption tracking), crisp 1px
+  borders instead of heavy shadows, subtle low-opacity elevation, generous
+  spacing, minimal noise, 0.28s screen fade with reduced-motion guard. Teal
+  primary buttons use obsidian text, not white.
+- Token-driven coverage across every screen — dashboard, auth, attendance,
+  calendar, courses, groups, productivity, settings, public pages, notifications,
+  analytics, assistant, onboarding, offline/PWA assets, charts and icons. Charts
+  use teal trend lines / course bars with champagne target markers. Course colours
+  centralised in `lib/theme.ts` (teal shades + three semantic accents, no
+  rainbow).
+- Website/PWA equivalents of the native touches: obsidian app icon, adaptive and
+  splash/notification glyph with a teal calendar-check on deep obsidian; dark
+  theme/status-bar colours. Android status/navigation-bar notes were design
+  context only — the Android app was not modified.
+- **No legacy accent colour** remains: `app/web.css`, legacy `app/globals.css`, manifest,
+  icon SVG, four regenerated PNGs, icon generator, offline page, colour arrays,
+  legacy dashboard class and test fixtures were all rewritten. Verified by grep
+  in source and the rebuilt `.next/static` bundle.
+
+### Supabase / Vercel linking
+- Wrote the ignored `.env.local` with the live project's **public** URL and
+  publishable key. The local preview now talks to the real project under existing
+  RLS; the missing-env setup error is gone. No service-role, secret or database
+  credential is present in the repo, browser bundle or these notes.
+- Applied the owner-approved **additive** Auth redirect allow-list change:
+  kept `http://localhost:3000/**`, `attendly://auth/callback`,
+  `attendly://auth/reset-password`; added
+  `https://3000-ij82xxqb0js5vttcwapbe.e2b.app/**`,
+  `https://attendly-web-cosmic-7aae.vercel.app/**`,
+  `https://attendly-web-git-arena-6fedf57b-attendly-cosmic-7aae.vercel.app/**`,
+  `https://attendly-*.vercel.app/**`. A fresh `get_auth_config` confirmed
+  `site_url=http://localhost:3000` and all other Auth settings unchanged.
+- Vercel project `attendly-web` still has the two public env vars and no GitHub
+  Login Connection. Hosted preview remains blocked (`git_info_fail`); **no
+  deployment is live and no production deployment occurred.** Production
+  promotion, DNS, `main` merge and production data testing remain unapproved.
+
+### Verification for this milestone
+- `npm run typecheck`, `npm run lint`, `npm test` (80/80), `npm run build`,
+  `npm audit --omit=dev` (0 vulnerabilities), 27-route HTTP/header smoke,
+  legacy-accent source + bundle grep, manifest/SW/icon checks, and a fresh local
+  `/signup` render with the linked Supabase env. Browser auth round trips, PWA
+  install/offline, responsive/theme matrix and real-account E2E are **not**
+  claimed as verified.

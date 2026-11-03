@@ -5,8 +5,10 @@
 - **Preview first.** No production promotion, custom domain/DNS change,
   production database setting change or `main` merge without explicit owner
   authorisation.
-- No Supabase migration, RLS policy, Auth setting, Storage policy or Edge
-  Function change was made. The deployed Android app is untouched.
+- No Supabase migration, database setting, RLS policy, Storage policy or
+  Edge Function change was made. The single **owner-approved additive** Auth
+  change is the redirect allow-list below; `site_url=http://localhost:3000` and
+  every other Auth setting are unchanged. The deployed Android app is untouched.
 - Only public/publishable Supabase values belong in Vercel env vars.
 
 ## Vercel project state (2026-11-03)
@@ -18,6 +20,8 @@
 | Env vars | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (plain, all three targets) |
 | Git connection | **Not linked** — owner action required (see blocker below) |
 | Deployments | Two attempts from `arena/6fedf57b-attendly` (`dpl_FpfrRcHaLUnXs3aroTd4YR2wsVqN`, `dpl_4RS3ED8rPvBeiFRnSUAFRuLUP8D6`) both ended `ERROR` with `git_info_fail`. Both records were deleted. **No deployment was ever live; no production deployment occurred.** |
+| Local link | `.env.local` (gitignored) holds the public project URL and publishable key; the frontend is linked to the live Supabase project under existing RLS |
+| Supabase Auth | Additive allow-list extended (see below); `site_url` unchanged |
 | Live preview | Local `npm run start` on `0.0.0.0:3000` served through the Arena live preview |
 
 ## Blocker
@@ -43,13 +47,21 @@ production promotion.
 2. Confirm the two public env vars are present for the preview target.
 3. Verify the preview: public pages, `/login`, `/signup`, `/home` setup/login
    behaviour, `/manifest.webmanifest`, `/sw.js`, icons, security headers and CSP.
-4. **Owner approval required:** add the preview origin (and later the production
-   origin) to the Supabase Auth redirect allow-list and set the appropriate
-   `site_url`. Current allow-list is only
-   `http://localhost:3000/**`, `attendly://auth/callback`,
-   `attendly://auth/reset-password`. Until this is done, email confirmation and
-   password-reset links resolve to localhost; `lib/auth.ts` retries with the
-   configured site URL when GoTrue rejects a redirect.
+4. **Already done (owner-approved, additive):** the redirect allow-list now
+   includes the Arena preview and Vercel preview aliases, on top of the original
+   localhost and mobile deep links:
+
+   - `http://localhost:3000/**`, `attendly://auth/callback`,
+   - `attendly://auth/reset-password`,
+   - `https://3000-ij82xxqb0js5vttcwapbe.e2b.app/**`,
+   - `https://attendly-web-cosmic-7aae.vercel.app/**`,
+   - `https://attendly-web-git-arena-6fedf57b-attendly-cosmic-7aae.vercel.app/**`,
+   - `https://attendly-*.vercel.app/**`
+
+   `site_url` stays `http://localhost:3000` and no other Auth setting changed.
+   `lib/auth.ts` still retries with the configured site URL when GoTrue rejects
+   a redirect. A **production** origin or production `site_url` change remains
+   gated on explicit owner approval.
 5. With a disposable test account, run the integration/E2E checklist in
    `docs/TESTING.md`. Never use real production data.
 6. Only after explicit approval: promote to production, add any custom domain

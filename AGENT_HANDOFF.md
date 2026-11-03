@@ -20,7 +20,8 @@ _Last updated: 2026-11-03._
   key, production credential change or production data test.
 - No production deployment, DNS change, irreversible infrastructure change or
   `main` merge without explicit authorisation. Preview is allowed.
-- Additive Supabase Auth redirect allow-list changes need owner approval.
+- The additive Supabase Auth redirect allow-list change was approved and
+  applied; production promotion, production `site_url` and DNS remain gated.
 - Only existing schema/tables/columns/RPCs. Missing services must be documented,
   not invented. No fake data, fake controls or fabricated test/deploy claims.
 - Work only on `arena/6fedf57b-attendly`; push only there.
@@ -33,7 +34,11 @@ _Last updated: 2026-11-03._
   settings-managed local data and conflict resolution.
 - 80/80 tests, typecheck, lint, production build, production dependency audit
   and HTTP/header smoke checks all pass. See `docs/TESTING.md`.
-- Commit `dad29f2` pushed to `origin/arena/6fedf57b-attendly`.
+- Commit `dad29f2` and `392d0d8` pushed to `origin/arena/6fedf57b-attendly`.
+- **Obsidian Academic** dark-first identity across all screens, charts, icons,
+  manifest and offline assets; no legacy accent colour in source or built bundle.
+- Local frontend linked to the live Supabase project via ignored `.env.local`
+  (public URL + publishable key only); approved additive Auth allow-list applied.
 - Vercel project `attendly-web` created with the two public env vars.
 - Local production server on `0.0.0.0:3000` is the Arena live preview.
 
@@ -42,8 +47,8 @@ _Last updated: 2026-11-03._
 - **Hosted preview deployment** — blocked by a missing Vercel ↔ GitHub Login
   Connection (`git_info_fail`). Two failed deployment records were deleted; no
   deployment is live. See `docs/DEPLOYMENT.md`.
-- **Supabase Auth redirect allow-list** — hosted origin absent, waiting for owner
-  approval.
+- **Hosted preview deployment** — still blocked by the missing Vercel ↔
+  GitHub Login Connection; no deployment is live.
 - Real-account integration/E2E, two-user privacy, realtime, offline→reconnect,
   browser PWA install/update, responsive/theme/print matrix. See
   `KNOWN_ISSUES.md` and `docs/TESTING.md`.
@@ -56,9 +61,8 @@ _Last updated: 2026-11-03._
    the exact failed `create_deployment` / `create_project` calls.
 2. Once authorised, create a **preview** deployment from this branch; verify
    routes, manifest, SW, icons, headers and the honest setup/login states.
-3. Request approval to add the preview origin to the Supabase Auth redirect
-   allow-list; only then test signup/confirmation/recovery with a disposable
-   account.
+3. With a disposable account, test signup/confirmation/recovery against the
+   preview origin (the additive Auth allow-list is already approved and applied).
 4. Run the integration/E2E checklist with a safe test account (never production
    data).
 5. After all gates pass, request explicit approval for production promotion /
@@ -68,7 +72,8 @@ _Last updated: 2026-11-03._
 
 ## Implementation notes for the next agent
 
-- `app/web.css` is active; `app/globals.css` is legacy/unused but preserved.
+- `app/web.css` is active and dark-first (Obsidian Academic);
+  `app/globals.css` is an unused neutral stub with no colours of its own.
 - `lib/data.ts` is the only database gateway. Add new queries there, never in
   components; always keep owner scoping and RLS.
 - `lib/attendance/engine.ts` is canonical. `lib/attendance-engine.js` is the

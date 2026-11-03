@@ -13,8 +13,9 @@ import { diffTimetables } from "@/lib/schedule";
 import { validateUpload } from "@/lib/validation";
 import { WEEKDAYS } from "@/lib/dates";
 import type { AcademicDayDraft, AcademicDayRow, CourseRow, DocumentKind, TimetableDraftRow, TimetableRuleRow } from "@/lib/types";
+import { COURSE_COLORS as COLORS } from "@/lib/theme";
 
-const COLORS = ["#8B7CFF", "#54D6D0", "#F0BD6A", "#FF8492", "#79A9FF", "#4FD1A1"];
+
 
 export function TimetableImport({ semesterId, userId, courses, rules, onDone }: {
   semesterId: string; userId: string; courses: CourseRow[]; rules: TimetableRuleRow[]; onDone: () => void;

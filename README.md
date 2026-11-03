@@ -11,13 +11,20 @@ dashboard, calendar/timetable upload with human review, attendance tools,
 courses, groups (schedule-only sharing), productivity, analytics/exports,
 notifications, a deterministic on-device assistant, settings, and an installable
 PWA with an offline outbox and conflict handling. The original starter files are
-preserved; `app/web.css` is the active stylesheet.
+preserved; `app/web.css` is the active stylesheet. The identity is **Obsidian
+Academic** — a dark-first, token-driven system with one muted-teal accent, Inter
+typography, crisp 1px borders and subtle screen fades across every screen,
+chart, icon and offline asset. No legacy accent colour remains in source or the built bundle.
 
 Verified: `npm run typecheck`, `npm run lint`, `npm test` (80/80),
 `npm run build`, `npm audit --omit=dev` (0 vulnerabilities) and HTTP/header
-smoke checks. No backend change was made. A Vercel project exists with the two
-public env vars, but a hosted preview is blocked by a missing Vercel ↔ GitHub
-Login Connection; no deployment is live and no production deployment occurred.
+smoke checks. The local frontend is linked to the live Supabase project through
+the ignored `.env.local`, and the owner-approved additive Auth redirect
+allow-list now covers the Arena and Vercel preview origins (`site_url` and every
+other Auth setting unchanged). No migration, schema, RLS, Storage or Edge
+Function change was made. A Vercel project exists with the two public env vars,
+but a hosted preview is still blocked by a missing Vercel ↔ GitHub Login
+Connection; no deployment is live and no production deployment occurred.
 
 Start here: `docs/SETUP.md`, `docs/TESTING.md`, `docs/DEPLOYMENT.md`. Architecture,
 decisions, limits and handoff: `ARCHITECTURE.md`, `TECH_DECISIONS.md`,
@@ -37,7 +44,7 @@ decisions, limits and handoff: `ARCHITECTURE.md`, `TECH_DECISIONS.md`,
 
 The Attendly project has been created in Supabase in the Mumbai region. Its project reference and dashboard link are recorded in `ATTENDLY_PROGRESS.md`. The publishable key and API URL belong in `.env.local`, which is ignored by Git. Never put a service-role key or database password in client code or this public repository.
 
-1. Copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_SUPABASE_URL` plus `NEXT_PUBLIC_SUPABASE_ANON_KEY` to the project's API URL and publishable key. The existing local workspace already has these values in its ignored `.env.local`.
+1. Copy `.env.example` to `.env.local` and set `NEXT_PUBLIC_SUPABASE_URL` plus `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` to the project's API URL and publishable key. The existing local workspace already has these values in its ignored `.env.local`.
 2. Apply `supabase/migrations/0001_attendly_core.sql` once in the project's SQL Editor or through the Supabase CLI. It creates the core schema, RLS policies, private `academic-documents` bucket, membership RPCs, and Realtime publication entries.
 3. In Supabase Auth settings, set the local site URL to `http://localhost:3000` and add local plus production callback URLs before enabling sign-in on a hosted domain.
 4. Confirm every exposed table has RLS enabled and test a second user cannot read personal attendance or documents before adding real student data.

@@ -20,6 +20,7 @@ Performed 2026-11-03 on branch `arena/6fedf57b-attendly` (branched from `main` @
 - Realtime publication contains exactly 6 tables: `attendance_records`, `calendar_events`, `calendar_poll_votes`, `calendar_polls`, `group_members`, `notifications`.
 - **No Edge Functions exist** → no OCR/extraction service, no AI service, no push sender.
 - Auth config: email/password ON, email confirmation ON (`mailer_autoconfirm=false`), min password length **6**, `site_url=http://localhost:3000`, allow-list `http://localhost:3000/**,attendly://auth/callback,attendly://auth/reset-password`, email rate limit 2/hour, signup enabled.
+- **2026-11-03 update (owner-approved, additive):** the allow-list was extended with the Arena live-preview origin and Vercel preview aliases while preserving all three original entries. Re-read via `get_auth_config` confirmed `site_url`, rate limits, captcha, SMTP, providers, MFA and all other fields unchanged. No other Auth setting changed.
 - Existing RPCs: `join_group_by_invite(text)`, `set_group_member_role(uuid,uuid,group_role)`, `is_group_member(uuid)`, `can_manage_group(uuid)`. Trigger `handle_new_user` creates `profiles`.
 - RLS facts that constrain the UI: `profiles` is self-select only (other members' names resolve to `null`); `attendance_records` is strictly `user_id = auth.uid()`; group schedules are `calendar_events` rows with `group_id` on a group-linked semester; `assignments`/`course_resources` are owner-only and require an owner-owned semester; `document_uploads` path must start with `<uid>/`.
 
@@ -37,10 +38,10 @@ Performed 2026-11-03 on branch `arena/6fedf57b-attendly` (branched from `main` @
 2. **No database, migration, RLS, auth, storage, or Edge Function changes.** All web writes go through the browser Supabase client with the publishable key and are constrained by existing RLS. No service-role key anywhere.
 3. **No invented endpoints.** Missing OCR/AI/push/notes/priority backends are handled with honest local equivalents (CSV import + human review, deterministic on-device assistant, local notes, local reminders) and documented as limitations.
 4. **Preserve existing files.** `lib/attendance-engine.js`, `tests/attendance-engine.test.js`, `lib/supabase/*`, `components/dashboard.tsx` and `app/globals.css` remain. The legacy dashboard's real-data overview behaviour is carried forward into the new `/home` dashboard.
-5. **Deployment:** Vercel project + preview deployment from this branch. Production promotion and any additive Supabase auth redirect URL change require explicit owner approval.
+5. **Deployment:** Vercel project + preview deployment from this branch. Production promotion still requires explicit owner approval; the additive Supabase auth redirect URL change was approved and applied (see above).
 
 ## Outstanding risks to document, not to "fix" destructively
 
-- Deployed signup/reset email links currently resolve to `localhost:3000` because the Vercel origin is not in the auth allow-list. Adding the new web origin is additive and safe for the mobile app, but is a shared backend config change → request approval.
+- Preview origins are now in the auth allow-list, so email confirmation and recovery links can target the Arena/Vercel preview. `site_url` is still `localhost:3000`; a production `site_url` change and production promotion remain owner-approval gated. Live confirmation/reset round trips are still unverified pending a disposable test account.
 - Email rate limit is 2/hour; live auth integration tests against production would create real accounts. Tests therefore use pure logic + mocked data layers; live user-flow verification is documented as not run.
 - There is no server-side account-deletion RPC. The website will offer data export and a clear, honest unsupported-state explanation rather than a fake delete button.

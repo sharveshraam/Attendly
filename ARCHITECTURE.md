@@ -21,8 +21,12 @@ Browser (website PWA)                Android app (unchanged)
         Storage: academic-documents (private)
 ```
 
-No migrations, schema changes, RLS policy edits, Auth config changes, Edge
-Functions or Storage policy changes were made for the website.
+No migrations, schema changes, RLS policy edits, Edge Functions or Storage
+policy changes were made for the website. The only Auth change is the approved
+additive redirect allow-list; `site_url` and all other Auth settings are
+unchanged. **Obsidian Academic** is a CSS/token-level, dark-first design system
+in `app/web.css` with a locally bundled Inter font — no backend, mobile or
+infrastructure change.
 
 ## Layers
 

@@ -63,8 +63,9 @@ only reason `unsafe-inline` appears for scripts/styles.
 - No admin/moderation surface exists; group roles come from existing RLS/RPCs.
 - In-app notifications are private per user under RLS; remote push is not
   configured (see `KNOWN_ISSUES.md`).
-- A production deployment still requires the deployed origin to be added to the
-  Supabase Auth redirect allow-list; that change is owner-approval gated.
+- The preview origins are already in the Supabase Auth redirect allow-list
+  (approved additive change). A production deployment still requires explicit
+  owner approval for a production origin and any `site_url` change.
 
 ## Reporting
 

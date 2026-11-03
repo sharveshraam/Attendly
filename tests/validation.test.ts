@@ -38,7 +38,7 @@ test("event requires end after start", () => {
 test("course target may be null to inherit semester default", () => {
   const parsed = safeParse(courseSchema, {
     name: "Databases", code: null, category: "theory", attendance_target: null,
-    calculation_mode: "class_count", color: "#8B7CFF",
+    calculation_mode: "class_count", color: "#38B8A5",
   });
   assert.equal(parsed.ok, true);
 });

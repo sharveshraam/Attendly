@@ -1,5 +1,42 @@
 # Changelog
 
+## 2026-11-03 — Obsidian Academic + Supabase link (branch `arena/6fedf57b-attendly`)
+
+### Changed
+- Replaced the earlier light-first design system with **Obsidian Academic**:
+  deep obsidian `#090D14` default background, midnight slate / graphite surfaces,
+  one muted-teal `#38B8A5` accent, ice blue `#75B9E7` for info, champagne
+  `#D5B77A` for warnings/exams, muted red `#E47777` for errors/at-risk. Dark is
+  the default (`color-scheme: dark`, `userInterfaceStyle`/theme colour dark); an
+  optional neutral `html.light` variant remains.
+- Bundled `@fontsource-variable/inter` locally (400–800 via variable weights),
+  tightened large-display tracking, opened caption tracking, switched heavy
+  shadows to crisp 1px borders and subtle low-opacity elevation, removed the
+  CTA/skeleton gradients, added a 0.28s screen fade with reduced-motion guard.
+- Applied the palette token-driven to every screen: public pages, auth,
+  onboarding, dashboard, attendance, calendar, courses, groups, productivity,
+  settings, notifications, analytics, assistant, offline/PWA assets, charts
+  (teal trend lines + champagne target markers) and course colour arrays
+  (`lib/theme.ts`). Teal buttons now carry obsidian text.
+- Regenerated `public/app-icon.svg` and all four PNG icons as an obsidian tile
+  with a teal calendar-check; updated `app/manifest.ts`, `public/offline.html`,
+  `app/layout.tsx` metadata and the legacy `app/globals.css` stub. No legacy accent
+  colour remains in source or the built `.next/static` bundle.
+
+### Linked
+- Wrote the ignored `.env.local` with the live project's **public** URL and
+  publishable key, so the local preview is linked to Supabase under existing RLS.
+- Applied the owner-approved **additive** Auth redirect allow-list: Arena preview
+  origin + Vercel preview aliases added; original localhost/mobile entries and
+  `site_url=http://localhost:3000` preserved; all other Auth settings unchanged.
+
+### Still blocked / not done
+- Hosted Vercel preview: missing Vercel ↔ GitHub Login Connection
+  (`git_info_fail`). No deployment live, no production deployment.
+- Production promotion, DNS, `main` merge, production data testing, real-account
+  auth/E2E and browser PWA/responsive verification remain unverified.
+
+
 ## 2026-11-03 — Website implementation (branch `arena/6fedf57b-attendly`)
 
 ### Added
@@ -16,7 +53,7 @@
   deterministic on-device assistant, notification center, settings.
 - PWA: `app/manifest.ts`, four generated PNG icons, `public/sw.js` (static-shell
   only), `public/offline.html`, `/offline`, install/update/offline banners,
-  theme (light/dark/system), toasts, command palette.
+  dark-first theme, toasts, command palette.
 - Domain modules: canonical attendance engine + legacy adapter, schedule
   generation/diff/conflicts, RFC-4180 CSV parsers, date helpers, Zod validation,
   CSV/ICS/printable reports, deterministic assistant, offline outbox/private
@@ -57,12 +94,13 @@
   unconfigured-Supabase setup state renders honestly.
 
 ### Not done / blocked
-- No Supabase writes, migrations, RLS/Auth/Storage/Edge Function changes.
+- No Supabase writes, migrations, RLS/Storage/Edge Function changes. The
+  approved additive Auth allow-list change above is the sole Auth config edit.
 - No production deployment, DNS change, `main` merge or production data test.
 - Vercel project `attendly-web` created with public env vars; two Git-source
   deployment attempts failed at `git_info_fail` and were deleted. A GitHub Login
   Connection must be added to the Vercel account before a hosted preview can be
-  built. Hosted Auth redirect allow-list change needs owner approval.
+  built. The preview Auth redirect allow-list change is done (approved).
 
 ## Earlier history
 

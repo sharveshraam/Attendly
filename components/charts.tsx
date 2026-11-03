@@ -93,8 +93,8 @@ export function Heatmap({ days, label = "Attendance calendar heatmap" }: {
 }) {
   const color = (percent: number | null) => {
     if (percent === null) return "var(--surface-3)";
-    if (percent >= 85) return "var(--success)";
-    if (percent >= 70) return "var(--accent-2)";
+    if (percent >= 85) return "var(--accent)";
+    if (percent >= 70) return "color-mix(in srgb, var(--accent) 70%, var(--surface))";
     if (percent >= 50) return "var(--warning)";
     return "var(--danger)";
   };

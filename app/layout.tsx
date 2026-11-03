@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from "next";
 import "./web.css";
+import "@fontsource-variable/inter";
 import { ThemeProvider, THEME_BOOTSTRAP } from "@/components/theme-provider";
 import { ToastProvider } from "@/components/toast";
 import { PwaProvider } from "@/components/pwa";
@@ -26,10 +27,8 @@ export const viewport: Viewport = {
   width: "device-width",
   initialScale: 1,
   viewportFit: "cover",
-  themeColor: [
-    { media: "(prefers-color-scheme: light)", color: "#F6F7FB" },
-    { media: "(prefers-color-scheme: dark)", color: "#0B1020" },
-  ],
+  themeColor: "#090D14",
+  colorScheme: "dark",
 };
 
 export default function RootLayout({ children }: Readonly<{ children: React.ReactNode }>) {

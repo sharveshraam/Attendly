@@ -12,6 +12,13 @@
 | `npm audit --omit=dev` | **0 vulnerabilities** |
 | `npm audit` (full) | 16 moderate dev-only advisories (eslint / typescript-eslint / minimatch); `npm audit fix` suggests downgrades and was not applied |
 | HTTP smoke test | 27 routes/assets returned 200, including all public/auth/app routes, `/manifest.webmanifest`, `/sw.js`, `/offline.html`, four PNG icons and the SVG icon |
+
+> **After the Supabase link (2026-11-03):** the 10 authenticated app routes now
+> correctly return `307` → `/login?next=…` for an anonymous visitor (the server
+> client works, `getUser()` is null, `proxy.ts`/layout redirect). Public, auth,
+> offline, manifest, SW, SVG and all four PNG assets still return `200`. The
+> earlier all-200 row above describes the pre-link build, where the missing env
+> produced an explicit setup state instead of a redirect.
 | Header check | security headers + CSP present; `/sw.js` no-cache + `Service-Worker-Allowed`; manifest `application/manifest+json` |
 
 ## Test files

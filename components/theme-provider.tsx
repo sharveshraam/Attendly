@@ -13,19 +13,23 @@ type ThemeContextValue = {
 
 const ThemeContext = createContext<ThemeContextValue | null>(null);
 
-/** Initial theme applied before hydration to avoid a flash of the wrong theme. */
-export const THEME_BOOTSTRAP = `(function(){try{var t=localStorage.getItem('${STORAGE_KEY}')||'system';var m=window.matchMedia('(prefers-color-scheme: dark)').matches;var d=t==='dark'||(t==='system'&&m);document.documentElement.classList.toggle('dark',d);document.documentElement.style.colorScheme=d?'dark':'light';}catch(e){}})();`;
+/**
+ * "Obsidian Academic" is dark-first. The root stylesheet is dark by default;
+ * only an explicit light preference (or a light OS with "system") adds `.light`.
+ * Applied before hydration to avoid a flash of the wrong theme.
+ */
+export const THEME_BOOTSTRAP = `(function(){try{var t=localStorage.getItem('${STORAGE_KEY}')||'dark';var m=window.matchMedia('(prefers-color-scheme: dark)').matches;var l=t==='light'||(t==='system'&&!m);document.documentElement.classList.toggle('light',l);document.documentElement.style.colorScheme=l?'light':'dark';}catch(e){document.documentElement.style.colorScheme='dark';}})();`;
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
-  const [theme, setThemeState] = useState<ThemePreference>("system");
-  const [systemDark, setSystemDark] = useState(false);
+  const [theme, setThemeState] = useState<ThemePreference>("dark");
+  const [systemDark, setSystemDark] = useState(true);
 
   useEffect(() => {
     try {
       const stored = localStorage.getItem(STORAGE_KEY) as ThemePreference | null;
       if (stored === "light" || stored === "dark" || stored === "system") setThemeState(stored);
     } catch {
-      /* storage may be blocked; system theme still works */
+      /* storage may be blocked; dark default still works */
     }
     const media = window.matchMedia("(prefers-color-scheme: dark)");
     setSystemDark(media.matches);
@@ -37,7 +41,7 @@ export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const resolved: "light" | "dark" = theme === "system" ? (systemDark ? "dark" : "light") : theme;
 
   useEffect(() => {
-    document.documentElement.classList.toggle("dark", resolved === "dark");
+    document.documentElement.classList.toggle("light", resolved === "light");
     document.documentElement.style.colorScheme = resolved;
   }, [resolved]);
 

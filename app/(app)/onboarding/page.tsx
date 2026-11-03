@@ -14,9 +14,10 @@ import { findConflicts, generateSessions, sessionKey } from "@/lib/schedule";
 import { safeParse, courseSchema, profileSchema, semesterSchema } from "@/lib/validation";
 import { addMonths, toDateKey } from "@/lib/dates";
 import type { CourseRow, SemesterRow } from "@/lib/types";
+import { COURSE_COLORS as COLORS } from "@/lib/theme";
 
 const STEPS = ["Welcome", "Academic setup", "Courses", "Timetable", "Review & finish"];
-const COLORS = ["#8B7CFF", "#54D6D0", "#F0BD6A", "#FF8492", "#79A9FF", "#4FD1A1"];
+
 
 export default function OnboardingPage() {
   const { user, profile, semester, courses, rules, events, academicDays, refresh } = useWorkspace();

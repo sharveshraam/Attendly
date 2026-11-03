@@ -5,7 +5,9 @@
 - Node.js **22+** (verified on 22.22.3) and npm 10+.
 - Access to the existing live Supabase project `Attendly`
   (ref `gavlxbxgxdormbfhtzlo`, `ap-south-1`). **Do not create a second project,
-  re-run the migration or change Auth/RLS/Storage settings.**
+  re-run the migration, or change RLS/Storage settings.** The owner-approved
+  additive Auth redirect allow-list is already applied; `site_url` and every
+  other Auth setting are unchanged.
 - A copy of `.env.example` → `.env.local` with the project's **public** URL and
   publishable key. These are browser-safe values; authorisation is RLS.
 
@@ -36,11 +38,27 @@ If env vars are missing, public pages still render and authenticated routes show
 an explicit "Supabase is not configured for this deployment" state instead of
 fake data.
 
-## Auth on localhost
+## Supabase link and Auth origins
 
-The live Auth config already allows `http://localhost:3000/**` with
-`site_url=http://localhost:3000`, so signup confirmation and recovery links work
-locally. External providers are disabled — use email/password only.
+The local workspace `.env.local` (gitignored) holds the **public** project URL
+and publishable key, so `/signup`, `/login` and the authenticated app now talk to
+the real project under existing RLS. Never copy a service-role or secret key.
+
+The owner approved one **additive** Auth change: extra redirect entries for the
+Arena live preview and Vercel preview aliases, keeping every existing entry.
+Current allow-list:
+
+- `http://localhost:3000/**`, `attendly://auth/callback`,
+- `attendly://auth/reset-password`,
+- `https://3000-ij82xxqb0js5vttcwapbe.e2b.app/**`,
+- `https://attendly-web-cosmic-7aae.vercel.app/**`,
+- `https://attendly-web-git-arena-6fedf57b-attendly-cosmic-7aae.vercel.app/**`,
+- `https://attendly-*.vercel.app/**`
+
+`site_url` remains `http://localhost:3000`; confirmations, signup, rate limits
+and all other Auth settings are unchanged. External providers are disabled —
+use email/password only. Production promotion and a production `site_url` change
+still require explicit owner authorisation.
 
 Do **not** test with real production user data. Use a disposable test account and
 a safe test environment; see `docs/TESTING.md`.

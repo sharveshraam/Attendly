@@ -164,3 +164,12 @@ Docs: `apps/mobile/README.md` and `apps/mobile/docs/{ARCHITECTURE,BACKEND_MAPPIN
 - Expo web credential wizard requires choosing/uploading a JKS/P12 and entering its passwords; it does not provide the automatic generation option. The browser file picker could not be opened through the available controls, so the keystore is not yet stored on Expo and no Android cloud build has been triggered.
 - Expo project is linked to ID `0788683a-5c80-4995-9831-70289c4332a9`; app.json metadata has been updated. GitHub build profile intended: preview; auto-submit to stores is off.
 - Remaining: securely upload the local keystore to Expo using the visible credentials form (or run authenticated Expo CLI and let EAS generate/store credentials), then start Android preview; separately set up Apple signing and build iOS. No store submissions have occurred.
+
+
+## Preview build update — 2026-11-03
+
+- Android signing credentials have now been saved to Expo for application ID `com.sharveshraam.attendly` (key alias `attendly`). The password is intentionally not documented or committed; a local backup remains under ignored `.private-signing/` in the build checkout.
+- Google Play service-account key was skipped; it is only needed for automated Play Store submission. No store submission has happened.
+- Expo project Preview environment now has `EXPO_PUBLIC_SUPABASE_URL` and `EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY` configured (both are browser-safe public client settings protected by RLS; no secret/service-role key was used).
+- Triggered Android Preview / internal distribution build from `arena/7b693859-attendly`, base `/apps/mobile`, build ID `a84e4c38-b4cc-44b1-8b38-023a82dc720c`, Git commit `0d18531`. Expo status was **in progress**, with Metro bundle complete and Gradle `:app:assembleRelease` running at last check. Check Expo build page for final success/failure and artifact URL.
+- iOS device build remains pending separate Apple signing setup. No production/store build was requested.

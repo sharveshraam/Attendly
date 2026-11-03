@@ -19,7 +19,7 @@
 | Project | `attendly-web`, id `prj_twoeGQ7HA5gfNe474qxk32NtQYfx`, framework `nextjs` |
 | Env vars | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (plain, all three targets) |
 | Git connection | **Not linked** — owner action required (see blocker below) |
-| Deployments | Two early attempts ended `ERROR` with `git_info_fail` and were deleted. **`dpl_GgaeYpWKRUT7d5u6dvQkha6s2YfT` is `READY`** (`aa7dd73`, ~45s build) after the GitHub Login Connection became available. |
+| Deployments | Two early attempts ended `ERROR` with `git_info_fail` and were deleted. `dpl_GgaeYpWKRUT7d5u6dvQkha6s2YfT` (`aa7dd73`, ~45s, reported `production`/`PROMOTED`) and `dpl_JCji2Xa6i56fsrMRHaavuQDXCfbC` (`72f8ae0`, ~16s, `target: staging`, environment `preview`, `STAGED`) are both `READY`. |
 | Local link | `.env.local` (gitignored) holds the public project URL and publishable key; the frontend is linked to the live Supabase project under existing RLS |
 | Supabase Auth | Additive allow-list extended (see below); `site_url` unchanged |
 | Live preview | Local `npm run start` on `0.0.0.0:3000` served through the Arena live preview |
@@ -48,8 +48,18 @@ deployment `target: production` / `PROMOTED` even though it was built from the
 feature branch — no custom domain, DNS change, `main` merge or production data
 test was performed.
 
-The two public Supabase env vars were present in the build (`build.env`). The
-Supabase Auth allow-list already contains the branch and project aliases.
+The two public Supabase env vars were present in both builds (`build.env`).
+The Supabase Auth allow-list already contains the branch and project aliases.
+The current **preview** deployment is `dpl_JCji2Xa6i56fsrMRHaavuQDXCfbC` at
+`https://attendly-mmqleg474-cosmic-7aae.vercel.app` (`target: staging`,
+`readySubstate: STAGED`, OIDC environment `preview`). Vercel's project
+`ssoProtection` is `all_except_custom_domains`, which is why an unauthenticated
+fetch of any `*.vercel.app` URL here redirects to Vercel login.
+
+> Note: Vercel reported `target: production` / `PROMOTED` for the first branch
+> deployment even though it came from `arena/6fedf57b-attendly`. No custom
+> domain, DNS change, `main` merge or production data test was performed; the
+> second deployment is a proper preview target.
 
 ## Steps once authorised
 

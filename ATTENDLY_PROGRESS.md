@@ -232,7 +232,10 @@ additive; all earlier sections above are preserved verbatim._
   `https://attendly-*.vercel.app/**`. A fresh `get_auth_config` confirmed
   `site_url=http://localhost:3000` and all other Auth settings unchanged.
 - The GitHub Login Connection is now in place. `dpl_GgaeYpWKRUT7d5u6dvQkha6s2YfT`
-  built `READY` in ~45s from `aa7dd73` with both public env vars and aliases
+  built `READY` in ~45s from `aa7dd73`; the current preview
+  `dpl_JCji2Xa6i56fsrMRHaavuQDXCfbC` built `READY` in ~16s from `72f8ae0` with
+  `target: staging` / environment `preview` / `STAGED`. Both had the two public
+  env vars and aliases
   `https://attendly-web-cosmic-7aae.vercel.app`,
   `https://attendly-web-git-arena-6fedf57b-attendly-cosmic-7aae.vercel.app` and
   `https://attendly-3qy7527yx-cosmic-7aae.vercel.app` — all covered by the Auth

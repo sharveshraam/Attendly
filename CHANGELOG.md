@@ -35,8 +35,11 @@
 ### Deployed
 - The GitHub Login Connection is now available. `dpl_GgaeYpWKRUT7d5u6dvQkha6s2YfT`
   built `READY` in ~45s from `aa7dd73` with both public env vars:
-  `https://attendly-web-cosmic-7aae.vercel.app` and the branch alias. Vercel
-  Deployment Protection requires a Vercel login to open it; Vercel labels the
+  `https://attendly-web-cosmic-7aae.vercel.app` and the branch alias. A second
+  deployment `dpl_JCji2Xa6i56fsrMRHaavuQDXCfbC` from `72f8ae0` is the current
+  **preview** (`target: staging`, environment `preview`, `STAGED`) at
+  `https://attendly-mmqleg474-cosmic-7aae.vercel.app`. Vercel SSO Deployment
+  Protection requires a Vercel login to open them; Vercel labels the first
   branch deployment `target: production` / `PROMOTED`.
 
 ### Still not done

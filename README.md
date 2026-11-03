@@ -23,9 +23,10 @@ smoke checks. The local frontend is linked to the live Supabase project through
 the ignored `.env.local`, and the owner-approved additive Auth redirect
 allow-list now covers the Arena and Vercel preview origins (`site_url` and every
 other Auth setting unchanged). No migration, schema, RLS, Storage or Edge
-Function change was made. A Vercel deployment of this branch is now `READY` at
-`https://attendly-web-cosmic-7aae.vercel.app` (Vercel Deployment Protection is
-on, so a Vercel login is required to open it). No custom domain, DNS change,
+Function change was made. Vercel deployments of this branch are `READY` at
+`https://attendly-web-cosmic-7aae.vercel.app` and the preview URL
+`https://attendly-mmqleg474-cosmic-7aae.vercel.app` (Vercel SSO Deployment
+Protection is on, so a Vercel login is required). No custom domain, DNS change,
 `main` merge or production data test was performed.
 
 Start here: `docs/SETUP.md`, `docs/TESTING.md`, `docs/DEPLOYMENT.md`. Architecture,

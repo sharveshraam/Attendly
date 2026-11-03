@@ -41,8 +41,9 @@ _Last updated: 2026-11-03._
   (public URL + publishable key only); approved additive Auth allow-list applied.
 - Vercel project `attendly-web` created with the two public env vars.
 - Local production server on `0.0.0.0:3000` is the Arena live preview.
-- Vercel deployment `dpl_GgaeYpWKRUT7d5u6dvQkha6s2YfT` built `READY` from
-  `aa7dd73` with both public env vars.
+- Vercel deployments `dpl_GgaeYpWKRUT7d5u6dvQkha6s2YfT` (`aa7dd73`) and
+  preview `dpl_JCji2Xa6i56fsrMRHaavuQDXCfbC` (`72f8ae0`, `target: staging`)
+  both built `READY` with both public env vars.
 
 ## What is NOT done
 

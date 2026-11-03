@@ -8,8 +8,9 @@ Features with a missing backend dependency are explicitly listed as unavailable.
 1. **Vercel hosted deployment exists but is externally unverified.** Two early
    deployment attempts failed at initialization with `git_info_fail` because the
    Vercel ↔ GitHub Login Connection was missing; both records were deleted. The
-   owner added the connection, and `dpl_GgaeYpWKRUT7d5u6dvQkha6s2YfT` built
-   `READY` from `aa7dd73` with both public env vars. The URL is behind Vercel
+   owner added the connection; `dpl_GgaeYpWKRUT7d5u6dvQkha6s2YfT` (`aa7dd73`)
+   and preview `dpl_JCji2Xa6i56fsrMRHaavuQDXCfbC` (`72f8ae0`) both built `READY`
+   with both public env vars. The URL is behind Vercel
    Deployment Protection (Vercel login required), so external route/header
    verification against it is still outstanding. Vercel labels that branch
    deployment `target: production` / `PROMOTED`; no custom domain, DNS, `main`

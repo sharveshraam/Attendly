@@ -184,3 +184,10 @@ Docs: `apps/mobile/README.md` and `apps/mobile/docs/{ARCHITECTURE,BACKEND_MAPPIN
 - Expo Preview environment has the public Supabase URL and publishable client key configured; no service-role key is used by the app build.
 - **iOS remains unbuilt.** No Apple signing credentials or developer-account authorization are configured. An iOS device-installable build will require Apple distribution signing. No iOS build or App Store submission has been triggered.
 - Next: start the iOS device build after Apple signing is available (or define a simulator-only build profile if only an iOS Simulator artifact is needed); separately verify the Android APK on a physical device and record any runtime issues.
+
+
+## iOS build check — 2026-11-03
+
+- Checked Expo's iOS build and project-credentials setup for bundle ID `com.sharveshraam.attendly`. Expo confirms there are **no iOS build credentials stored** for this project; the existing `preview` profile requests internal device distribution.
+- Expo's credential setup requires Apple distribution signing materials, including a distribution certificate and provisioning profile. No Apple credentials were supplied/configured, and no iOS build was started. Expo Submit remains unchecked; nothing was submitted to the App Store.
+- The Android Preview APK is complete and linked above. To produce a phone-installable iOS IPA, configure Apple signing for this bundle identifier in Expo, then rerun the iOS Preview build. A simulator-only artifact would require an explicit simulator build profile and would not be installable on iPhones/iPads.

@@ -151,3 +151,16 @@ Docs: `apps/mobile/README.md` and `apps/mobile/docs/{ARCHITECTURE,BACKEND_MAPPIN
 - No build has been triggered yet. iOS credentials are also not configured; Apple signing will be a separate step. No app-store submission has been requested.
 - Next: establish managed Android signing credentials using an appropriate secure setup path, then run Android preview build; subsequently configure iOS credentials/build. Keep passwords and keystore contents out of this file and chat.
 - Expo GitHub builds documentation notes first successful CLI builds are a prerequisite before using GitHub build integration. Source: https://docs.expo.dev/build/building-from-github/.
+
+
+## Follow-up build preparation — 2026-11-03
+
+- Local workspace now has a sparse checkout of `arena/7b693859-attendly` under `attendly-app/attendly-mobile-build`; the web app directory was left unchanged.
+- Downloaded the official portable Node.js 24.22.2 distribution into this workspace (no system-wide install). Dependencies installed from the checked-in `package-lock.json` (1,152 packages).
+- Local verification: `tsc --noEmit` passed; Jest passed **67/67 tests across 6 suites**.
+- npm reported **33 dependency audit findings** (1 low, 32 moderate); dependency versions were not changed during this build attempt.
+- Local mobile `.env.local` is configured from the existing private local Supabase client config; it remains git-ignored.
+- A signing keystore was generated locally for `com.sharveshraam.attendly` after the user approved Android signing setup. Keystore and random password are saved locally under ignored `.private-signing/`; neither has been uploaded to Expo or pushed to GitHub. Do not copy the password or private key into this file.
+- Expo web credential wizard requires choosing/uploading a JKS/P12 and entering its passwords; it does not provide the automatic generation option. The browser file picker could not be opened through the available controls, so the keystore is not yet stored on Expo and no Android cloud build has been triggered.
+- Expo project is linked to ID `0788683a-5c80-4995-9831-70289c4332a9`; app.json metadata has been updated. GitHub build profile intended: preview; auto-submit to stores is off.
+- Remaining: securely upload the local keystore to Expo using the visible credentials form (or run authenticated Expo CLI and let EAS generate/store credentials), then start Android preview; separately set up Apple signing and build iOS. No store submissions have occurred.

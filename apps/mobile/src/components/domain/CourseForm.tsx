@@ -6,7 +6,7 @@ import { courseSchema, type CourseInput } from '@/lib/validation';
 import { useTheme } from '@/theme';
 import type { Course } from '@/types/domain';
 
-export const COURSE_COLORS = ['#8B7CFF', '#54D6D0', '#F5B84C', '#F26D6D', '#5EA2F7', '#3DDC97', '#E879F9', '#FB923C'];
+export const COURSE_COLORS = ['#38B8A5', '#75B9E7', '#D5B77A', '#E47777', '#7E9BC0', '#6BC5B4', '#C9A86A', '#A8B8C8'];
 
 interface CourseFormProps {
   initial?: Course;

@@ -42,7 +42,7 @@ export async function configureNotificationChannels(): Promise<void> {
       name: 'Class & deadline reminders',
       importance: Notifications.AndroidImportance.HIGH,
       vibrationPattern: [0, 250, 250, 250],
-      lightColor: '#8B7CFF',
+      lightColor: '#38B8A5',
     });
     await Notifications.setNotificationChannelAsync('updates', {
       name: 'Schedule & group updates',

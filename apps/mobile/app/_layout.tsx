@@ -1,6 +1,8 @@
 import React, { useEffect } from 'react';
+import { Platform } from 'react-native';
 import { Stack, useRouter, useSegments } from 'expo-router';
 import { StatusBar } from 'expo-status-bar';
+import { NavigationBar } from 'expo-navigation-bar';
 import { QueryClient, QueryClientProvider, useQueryClient } from '@tanstack/react-query';
 import {
   Inter_400Regular,
@@ -112,6 +114,7 @@ function AppShell() {
   return (
     <>
       <StatusBar style={theme.name === 'dark' ? 'light' : 'dark'} />
+      {Platform.OS === 'android' ? <NavigationBar style={theme.name === 'dark' ? 'light' : 'dark'} /> : null}
       <Stack
         screenOptions={{
           headerShown: false,

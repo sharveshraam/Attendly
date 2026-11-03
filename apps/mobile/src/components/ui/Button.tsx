@@ -47,11 +47,14 @@ export function Button({
     ghost: 'transparent',
     danger: c.danger,
   };
+  // Dark obsidian text on the lighter dark-mode accents; white on the deeper
+  // light-mode accents — keeps contrast high in both themes.
+  const onAccent = theme.name === 'dark' ? '#090D14' : '#FFFFFF';
   const fg: Record<Variant, string> = {
-    primary: '#FFFFFF',
+    primary: onAccent,
     secondary: c.text,
     ghost: c.primary,
-    danger: '#FFFFFF',
+    danger: onAccent,
   };
   const heights: Record<Size, number> = { sm: 38, md: 48, lg: 54 };
   const fontSizes: Record<Size, number> = { sm: 13, md: 15, lg: 16 };
@@ -70,8 +73,9 @@ export function Button({
           backgroundColor: bg[variant],
           height: heights[size],
           borderRadius: theme.radius.md,
-          borderWidth: variant === 'ghost' ? 0 : 0,
-          opacity: isDisabled ? 0.5 : pressed ? 0.85 : 1,
+          borderWidth: variant === 'secondary' ? 1 : 0,
+          borderColor: c.border,
+          opacity: isDisabled ? 0.5 : pressed ? 0.88 : 1,
           alignSelf: fullWidth ? 'stretch' : 'flex-start',
           paddingHorizontal: size === 'sm' ? theme.spacing.md : theme.spacing.xl,
         },

@@ -38,5 +38,5 @@ export function Card({ children, onPress, style, padded = true, elevated = true 
 }
 
 const styles = StyleSheet.create({
-  card: { borderWidth: StyleSheet.hairlineWidth, overflow: 'hidden' },
+  card: { borderWidth: 1, overflow: 'hidden' },
 });

@@ -3,7 +3,8 @@ node_modules/
 dist/
 web-build/
 expo-env.d.ts
-.env
+# Public client config is committed so builds always embed it.
+!.env
 .env.local
 .env.*.local
 native/

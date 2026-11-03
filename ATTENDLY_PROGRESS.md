@@ -138,3 +138,39 @@ npx expo start
 ```
 
 Docs: `apps/mobile/README.md` and `apps/mobile/docs/{ARCHITECTURE,BACKEND_MAPPING,BUILD,PERMISSIONS,NOTIFICATIONS,OFFLINE_SYNC,TESTING,PROPOSED_BACKEND_ADDITIONS}.md`.
+
+---
+
+# Mobile — Android launch fix + "Obsidian Academic" redesign (v1.1.0)
+
+Branch `arena/7b693859-attendly`. Append-only; prior sections preserved. No backend schema, RLS, auth, or storage changes were made in this pass.
+
+## Part 1 — why the APK showed "Configure Attendly", and the fix
+
+**Root cause:** `EXPO_PUBLIC_*` values are inlined by Metro **at build time**. They previously lived only in the git-ignored `apps/mobile/.env.local`, so an APK built on EAS or another machine never received them; `isSupabaseConfigured` was false and the entry route rendered the developer config screen.
+
+**Fix (at the source, not by hiding the check):**
+- Committed `apps/mobile/.env` with the public project URL + publishable key so local builds embed them.
+- Added the same values to every `eas.json` build profile's `env` so EAS cloud builds embed them.
+- Added `app.config.ts` mirroring the values into `extra`; the Supabase client falls back to `Constants.expoConfig.extra` if inlining is unavailable.
+- Replaced the config screen with a calm branded error + retry (`expo-updates` reload). Normal flow is splash → init → session restore → auth/dashboard.
+- These are public, RLS-protected client values — **not** a service-role key; no secrets committed.
+
+**Verified:** `expo config` resolves the URL + key; the exported Android Hermes bundle contains both the project URL and the publishable key (grep-confirmed). The config screen cannot appear in a correctly built APK.
+
+## Part 2 — complete visual redesign
+
+Replaced the violet-gradient identity with **Obsidian Academic**: backgrounds `#090D14` / `#101722` / `#182231`, text `#F1F5F9` / `#A5ADBA`, neutral border `#263244`. Single dominant accent **muted teal `#38B8A5`**; ice blue `#75B9E7` (info), champagne `#D5B77A` (warning), muted red `#E47777` (error) used only by meaning. Editorial Inter tracking, crisp 1px borders, subtle shadows, dark-on-teal buttons for contrast. New obsidian app icon / adaptive icon / splash / notification glyph. Dark is the default (`userInterfaceStyle: dark`, theme default `dark`); Android navigation bar synced via `expo-navigation-bar`. Because the design system is token-driven, **every screen** inherits the new identity. Grep confirms **zero** legacy violet (`#8B7CFF`/`#6D5CE7`/`#54D6D0`) or old background (`#0B1020`) remains in app source or the exported bundle.
+
+## Version + verification
+
+- Bumped to **1.1.0** (Android `versionCode` 2, iOS `buildNumber` 2).
+- `tsc --noEmit` clean; **67 tests / 6 suites passing**; Android + iOS Metro bundles exported.
+- Added `expo-updates` (retry/reload) and `expo-navigation-bar` (Android nav polish).
+
+## APK delivery — honest status
+
+A native, installable APK **cannot be compiled in this sandbox**: no Java/Android SDK/Gradle, and `dl.google.com`, `repo.maven.apache.org`, and `services.gradle.org` are network-blocked. The JS/Metro layer is fully verified (config + theme embedded). To produce the signed APK, run on a machine with the toolchain or EAS:
+- **EAS (recommended):** `eas build --platform android --profile preview` (APK) or `--profile production` (AAB). The `env` in `eas.json` guarantees the config is embedded.
+- **Local:** `npx expo run:android --variant release` (requires JDK 17 + Android SDK).
+See `apps/mobile/docs/BUILD.md`. On-device/emulator testing was not possible here and is not claimed.

@@ -118,7 +118,7 @@ export default function Assignments() {
             <Card key={assignment.id} style={styles.assignmentCard}>
               <View style={styles.assignmentRow}>
                 <Pressable onPress={() => cycleStatus(assignment.id, assignment.status)} style={[styles.checkbox, { borderColor: assignment.status === 'submitted' ? theme.colors.success : theme.colors.borderStrong, backgroundColor: assignment.status === 'submitted' ? theme.colors.success : 'transparent' }]} accessibilityLabel="Toggle status">
-                  {assignment.status === 'submitted' ? <Ionicons name="checkmark" size={16} color="#FFF" /> : null}
+                  {assignment.status === 'submitted' ? <Ionicons name="checkmark" size={16} color={theme.name === 'dark' ? '#090D14' : '#FFFFFF'} /> : null}
                 </Pressable>
                 <View style={styles.flex}>
                   <Text variant="body" weight="semiBold" style={assignment.status === 'submitted' ? { textDecorationLine: 'line-through', opacity: 0.6 } : undefined}>{assignment.title}</Text>

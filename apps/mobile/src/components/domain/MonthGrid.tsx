@@ -66,13 +66,13 @@ export function MonthGrid({ anchor, selected, onSelect, events, academicDays, co
               <Text
                 variant="small"
                 weight={isToday || isSelected ? 'bold' : 'medium'}
-                style={{ color: isSelected ? '#FFFFFF' : isHoliday ? c.danger : isToday ? c.primary : c.text }}
+                style={{ color: isSelected ? (theme.name === 'dark' ? '#090D14' : '#FFFFFF') : isHoliday ? c.danger : isToday ? c.primary : c.text }}
               >
                 {day.getDate()}
               </Text>
               <View style={styles.dots}>
                 {dayEvents.slice(0, 3).map((e) => (
-                  <View key={e.id} style={[styles.dot, { backgroundColor: isSelected ? '#FFFFFF' : courseColor(e.course_id) }]} />
+                  <View key={e.id} style={[styles.dot, { backgroundColor: isSelected ? (theme.name === 'dark' ? '#090D14' : '#FFFFFF') : courseColor(e.course_id) }]} />
                 ))}
               </View>
             </Pressable>

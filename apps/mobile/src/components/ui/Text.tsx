@@ -54,6 +54,7 @@ export function Text({ variant = 'body', tone = 'primary', weight, style, childr
           fontSize: sizes[variant],
           color: tones[tone],
           fontFamily: theme.typography.fontFamily[resolvedWeight],
+          letterSpacing: theme.typography.letterSpacing[variant],
         },
         style,
       ]}

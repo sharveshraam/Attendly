@@ -6,8 +6,10 @@
 | --- | --- |
 | `tsc --noEmit` | ✅ clean |
 | `jest` | ✅ 67 tests / 6 suites passing |
-| `expo export --platform android --platform ios` | ✅ both Hermes (`.hbc`) bundles produced (~5.5 MB each) |
-| `gradle assembleRelease` / `xcodebuild` | ⚠️ **not run** — no Android SDK or Xcode in this environment |
+| `expo export --platform android --platform ios` | ✅ both Hermes (`.hbc`) bundles produced (~5.6 MB each) |
+| Supabase URL + publishable key embedded in Android bundle | ✅ verified by inspecting the exported `.hbc` |
+| Obsidian theme present / legacy violet absent in bundle | ✅ verified |
+| `gradle assembleRelease` / `xcodebuild` | ⚠️ **not run** — no Android SDK, Xcode, or Java here; Google/Gradle/Maven hosts are network-blocked |
 | On-device / emulator run | ⚠️ **not run** — requires a device or emulator |
 
 The Metro export proves the JavaScript/TypeScript bundles compile and all native module imports resolve for both platforms. Producing installable `.apk`/`.aab`/`.ipa` binaries requires the native toolchains below.
@@ -19,12 +21,24 @@ The Metro export proves the JavaScript/TypeScript bundles compile and all native
 - For iOS: macOS + Xcode 16, CocoaPods, a simulator or device (Apple Developer account for device builds)
 - An Expo account + EAS CLI (`npm i -g eas-cli`) for cloud builds
 
-## Environment
+## Environment / the "Configure Attendly" fix
 
-```bash
-cp .env.example .env.local
-# EXPO_PUBLIC_SUPABASE_URL + EXPO_PUBLIC_SUPABASE_PUBLISHABLE_KEY (public values only)
-```
+`EXPO_PUBLIC_*` values are inlined by Metro **at build time**. The earlier APK showed the config
+screen because those values lived only in a git-ignored `.env.local`, which an EAS/other-machine
+build never saw. The fix makes the public config available to **every** build:
+
+1. **`apps/mobile/.env` (committed)** — public project URL + publishable key. Local builds embed it.
+2. **`eas.json` `env` on every profile** — the same values, so EAS cloud builds embed them.
+3. **`app.config.ts` → `extra`** — mirrored fallback read via `Constants.expoConfig.extra` in the
+   Supabase client if inlining is ever unavailable.
+
+These are **public, RLS-protected client values, not secrets** (never a service-role key).
+`.env.local` (git-ignored) still overrides locally. After any rebuild, the app launches into the real
+experience; the config screen is replaced by a calm error + retry that should never appear in a
+correctly built APK.
+
+> If you rotate the Supabase publishable key, update it in `.env`, `eas.json`, and `.env.example`
+> together, then rebuild — an already-installed APK keeps the value it was built with.
 
 ## Local development
 

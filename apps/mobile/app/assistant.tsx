@@ -65,10 +65,10 @@ export default function Assistant() {
         {messages.map((message) => (
           <View key={message.id} style={[styles.bubbleRow, message.role === 'user' ? styles.userRow : styles.assistantRow]}>
             <View style={[styles.bubble, { backgroundColor: message.role === 'user' ? theme.colors.primary : theme.colors.surface }]}>
-              <Text variant="small" tone={message.role === 'user' ? 'inverse' : 'primary'} style={styles.bubbleText}>{message.text}</Text>
+              <Text variant="small" tone="primary" style={[styles.bubbleText, message.role === 'user' ? { color: theme.name === 'dark' ? '#090D14' : '#FFFFFF' } : null]}>{message.text}</Text>
               {message.action ? (
                 <Pressable onPress={() => router.push(message.action!.route as never)} style={styles.actionLink}>
-                  <Text variant="caption" weight="semiBold" style={{ color: message.role === 'user' ? '#FFFFFF' : theme.colors.primary }}>
+                  <Text variant="caption" weight="semiBold" style={{ color: message.role === 'user' ? (theme.name === 'dark' ? '#090D14' : '#FFFFFF') : theme.colors.primary }}>
                     {message.action.label} →
                   </Text>
                 </Pressable>

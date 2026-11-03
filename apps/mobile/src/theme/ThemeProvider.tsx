@@ -43,7 +43,7 @@ export function buildTheme(name: ThemeName): Theme {
 
 export function ThemeProvider({ children }: { children: React.ReactNode }) {
   const system = useColorScheme();
-  const [preference, setPreferenceState] = useState<ThemePreference>('system');
+  const [preference, setPreferenceState] = useState<ThemePreference>('dark');
 
   useEffect(() => {
     let active = true;

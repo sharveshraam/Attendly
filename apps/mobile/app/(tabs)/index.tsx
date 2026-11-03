@@ -8,7 +8,7 @@ import { useAuth } from '@/hooks/useAuth';
 import { useActiveSemester, useAssignments, useCourseStats, useEvents, useSessions } from '@/hooks/useAcademicData';
 import { useMarkAttendance } from '@/hooks/useMarkAttendance';
 import { summarize } from '@/lib/attendance/engine';
-import { countdownLabel, formatTime, isToday } from '@/lib/dates';
+import { countdownLabel, formatDateLong, formatTime, isToday } from '@/lib/dates';
 import { useTheme } from '@/theme';
 import type { AttendanceStatus } from '@/types/database';
 
@@ -84,11 +84,11 @@ export default function Home() {
     <Screen contentContainerStyle={styles.container}>
       <View style={styles.header}>
         <View style={styles.flex}>
-          <Text variant="caption" tone="secondary">{greeting()},</Text>
+          <Text variant="caption" tone="secondary">{greeting()} · {formatDateLong(new Date().toISOString())}</Text>
           <Text variant="headline" weight="bold" numberOfLines={1}>{name}</Text>
           <Text variant="small" tone="secondary">{active.name}{active.institution ? ` · ${active.institution}` : ''}</Text>
         </View>
-        <Pressable onPress={() => router.push('/notifications')} style={[styles.iconBtn, { backgroundColor: theme.colors.surface }]} accessibilityLabel="Notifications">
+        <Pressable onPress={() => router.push('/notifications')} style={[styles.iconBtn, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]} accessibilityLabel="Notifications">
           <Ionicons name="notifications-outline" size={20} color={theme.colors.text} />
         </Pressable>
       </View>
@@ -119,7 +119,7 @@ export default function Home() {
           { icon: 'analytics-outline' as const, label: 'Analytics', route: '/analytics' },
           { icon: 'chatbubble-ellipses-outline' as const, label: 'Assistant', route: '/assistant' },
         ].map((action) => (
-          <Pressable key={action.label} onPress={() => router.push(action.route as never)} style={[styles.quickAction, { backgroundColor: theme.colors.surface }]} accessibilityRole="button">
+          <Pressable key={action.label} onPress={() => router.push(action.route as never)} style={[styles.quickAction, { backgroundColor: theme.colors.surface, borderColor: theme.colors.border }]} accessibilityRole="button">
             <Ionicons name={action.icon} size={20} color={theme.colors.primary} />
             <Text variant="caption" weight="medium">{action.label}</Text>
           </Pressable>
@@ -205,12 +205,12 @@ const styles = StyleSheet.create({
   emptyContainer: { flexGrow: 1, justifyContent: 'center' },
   header: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   flex: { flex: 1 },
-  iconBtn: { width: 42, height: 42, borderRadius: 14, alignItems: 'center', justifyContent: 'center' },
+  iconBtn: { width: 42, height: 42, borderRadius: 14, alignItems: 'center', justifyContent: 'center', borderWidth: 1 },
   overallCard: { flexDirection: 'row', alignItems: 'center', gap: 18 },
   overallInfo: { flex: 1, gap: 4 },
   statsRow: { flexDirection: 'row', gap: 10 },
   quickActions: { flexDirection: 'row', gap: 10 },
-  quickAction: { flex: 1, alignItems: 'center', gap: 6, paddingVertical: 14, borderRadius: 16 },
+  quickAction: { flex: 1, alignItems: 'center', gap: 6, paddingVertical: 14, borderRadius: 16, borderWidth: 1 },
   nextCard: { marginBottom: 4 },
   nextRow: { flexDirection: 'row', alignItems: 'center', gap: 12 },
   nextIcon: { width: 40, height: 40, borderRadius: 12, alignItems: 'center', justifyContent: 'center' },

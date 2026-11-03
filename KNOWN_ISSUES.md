@@ -3,19 +3,18 @@
 _Last updated: 2026-11-03._ Nothing in this file is "complete but undocumented".
 Features with a missing backend dependency are explicitly listed as unavailable.
 
-## Blocked on owner authorization / external account setup
+## Hosted deployment / owner-authorization items
 
-1. **Vercel ↔ GitHub Login Connection is missing.** A Vercel project
-   (`attendly-web`) was created with the two public Supabase env vars, but two
-   deployment attempts from branch `arena/6fedf57b-attendly` failed at
-   initialization with `git_info_fail: Git information retrieval failed for this
-   deployment`. Both failed deployment records were deleted; **no deployment was
-   ever live and no production deployment occurred**. A separate attempt to link
-   the repository returned `Failed to link sharveshraam/Attendly. You need to add
-   a Login Connection to your GitHub account first.` The owner must add that
-   connection in Vercel (or authorise an alternative deployment method) before a
-   hosted preview can be built. The local production server is running as the
-   Arena live preview in the meantime.
+1. **Vercel hosted deployment exists but is externally unverified.** Two early
+   deployment attempts failed at initialization with `git_info_fail` because the
+   Vercel ↔ GitHub Login Connection was missing; both records were deleted. The
+   owner added the connection, and `dpl_GgaeYpWKRUT7d5u6dvQkha6s2YfT` built
+   `READY` from `aa7dd73` with both public env vars. The URL is behind Vercel
+   Deployment Protection (Vercel login required), so external route/header
+   verification against it is still outstanding. Vercel labels that branch
+   deployment `target: production` / `PROMOTED`; no custom domain, DNS, `main`
+   merge or production data test occurred. The local production server remains
+   the Arena live preview.
 2. **Resolved — preview Auth origins are allowed.** The owner approved an
    additive allow-list change; it now contains `http://localhost:3000/**`, `attendly://auth/callback`,
    `attendly://auth/reset-password`,

@@ -30,11 +30,16 @@
   origin + Vercel preview aliases added; original localhost/mobile entries and
   `site_url=http://localhost:3000` preserved; all other Auth settings unchanged.
 
-### Still blocked / not done
-- Hosted Vercel preview: missing Vercel ↔ GitHub Login Connection
-  (`git_info_fail`). No deployment live, no production deployment.
-- Production promotion, DNS, `main` merge, production data testing, real-account
-  auth/E2E and browser PWA/responsive verification remain unverified.
+### Deployed
+- The GitHub Login Connection is now available. `dpl_GgaeYpWKRUT7d5u6dvQkha6s2YfT`
+  built `READY` in ~45s from `aa7dd73` with both public env vars:
+  `https://attendly-web-cosmic-7aae.vercel.app` and the branch alias. Vercel
+  Deployment Protection requires a Vercel login to open it; Vercel labels the
+  branch deployment `target: production` / `PROMOTED`.
+
+### Still not done
+- No custom domain, DNS change, `main` merge, production data testing,
+  real-account auth/E2E or browser PWA/responsive verification.
 
 
 ## 2026-11-03 — Website implementation (branch `arena/6fedf57b-attendly`)
@@ -97,10 +102,11 @@
 - No Supabase writes, migrations, RLS/Storage/Edge Function changes. The
   approved additive Auth allow-list change above is the sole Auth config edit.
 - No production deployment, DNS change, `main` merge or production data test.
-- Vercel project `attendly-web` created with public env vars; two Git-source
-  deployment attempts failed at `git_info_fail` and were deleted. A GitHub Login
-  Connection must be added to the Vercel account before a hosted preview can be
-  built. The preview Auth redirect allow-list change is done (approved).
+- Vercel project `attendly-web` created with public env vars; two early
+  Git-source deployment attempts failed at `git_info_fail` and were deleted.
+  **Superseded by the section above:** the GitHub Login Connection was later
+  added and a deployment built `READY`. The preview Auth redirect allow-list
+  change is done (approved).
 
 ## Earlier history
 

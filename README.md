@@ -14,7 +14,8 @@ PWA with an offline outbox and conflict handling. The original starter files are
 preserved; `app/web.css` is the active stylesheet. The identity is **Obsidian
 Academic** — a dark-first, token-driven system with one muted-teal accent, Inter
 typography, crisp 1px borders and subtle screen fades across every screen,
-chart, icon and offline asset. No legacy accent colour remains in source or the built bundle.
+chart, icon and offline asset. No legacy accent colour remains in source
+or the built bundle.
 
 Verified: `npm run typecheck`, `npm run lint`, `npm test` (80/80),
 `npm run build`, `npm audit --omit=dev` (0 vulnerabilities) and HTTP/header
@@ -22,9 +23,10 @@ smoke checks. The local frontend is linked to the live Supabase project through
 the ignored `.env.local`, and the owner-approved additive Auth redirect
 allow-list now covers the Arena and Vercel preview origins (`site_url` and every
 other Auth setting unchanged). No migration, schema, RLS, Storage or Edge
-Function change was made. A Vercel project exists with the two public env vars,
-but a hosted preview is still blocked by a missing Vercel ↔ GitHub Login
-Connection; no deployment is live and no production deployment occurred.
+Function change was made. A Vercel deployment of this branch is now `READY` at
+`https://attendly-web-cosmic-7aae.vercel.app` (Vercel Deployment Protection is
+on, so a Vercel login is required to open it). No custom domain, DNS change,
+`main` merge or production data test was performed.
 
 Start here: `docs/SETUP.md`, `docs/TESTING.md`, `docs/DEPLOYMENT.md`. Architecture,
 decisions, limits and handoff: `ARCHITECTURE.md`, `TECH_DECISIONS.md`,

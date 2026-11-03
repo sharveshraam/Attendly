@@ -41,14 +41,16 @@ _Last updated: 2026-11-03._
   (public URL + publishable key only); approved additive Auth allow-list applied.
 - Vercel project `attendly-web` created with the two public env vars.
 - Local production server on `0.0.0.0:3000` is the Arena live preview.
+- Vercel deployment `dpl_GgaeYpWKRUT7d5u6dvQkha6s2YfT` built `READY` from
+  `aa7dd73` with both public env vars.
 
 ## What is NOT done
 
-- **Hosted preview deployment** — blocked by a missing Vercel ↔ GitHub Login
-  Connection (`git_info_fail`). Two failed deployment records were deleted; no
-  deployment is live. See `docs/DEPLOYMENT.md`.
-- **Hosted preview deployment** — still blocked by the missing Vercel ↔
-  GitHub Login Connection; no deployment is live.
+- **Hosted deployment verification** — `dpl_GgaeYpWKRUT7d5u6dvQkha6s2YfT`
+  is `READY` at `https://attendly-web-cosmic-7aae.vercel.app`, but Vercel
+  Deployment Protection requires a Vercel login, so external route/CSP checks
+  were not repeated against it. Vercel labels the branch deployment `production`;
+  no custom domain/DNS/`main` merge/production data test occurred.
 - Real-account integration/E2E, two-user privacy, realtime, offline→reconnect,
   browser PWA install/update, responsive/theme/print matrix. See
   `KNOWN_ISSUES.md` and `docs/TESTING.md`.
@@ -56,11 +58,12 @@ _Last updated: 2026-11-03._
 
 ## Immediate next tasks (in order)
 
-1. Ask the owner for the minimum authorisation: add the GitHub Login Connection
-   in Vercel (or approve an alternative preview deployment path). Do not retry
-   the exact failed `create_deployment` / `create_project` calls.
-2. Once authorised, create a **preview** deployment from this branch; verify
-   routes, manifest, SW, icons, headers and the honest setup/login states.
+1. **Done:** GitHub Login Connection added; deployment from this branch is
+   `READY`. Do not repeat the earlier failed `git_info_fail` calls.
+2. Open the hosted URL with a Vercel-authenticated session and verify routes,
+   manifest, SW, icons, headers and the honest setup/login states. If a strictly
+   preview-only target is required, recreate it (the connector reports
+   `target: production` for git deployments).
 3. With a disposable account, test signup/confirmation/recovery against the
    preview origin (the additive Auth allow-list is already approved and applied).
 4. Run the integration/E2E checklist with a safe test account (never production

@@ -19,34 +19,47 @@
 | Project | `attendly-web`, id `prj_twoeGQ7HA5gfNe474qxk32NtQYfx`, framework `nextjs` |
 | Env vars | `NEXT_PUBLIC_SUPABASE_URL`, `NEXT_PUBLIC_SUPABASE_PUBLISHABLE_KEY` (plain, all three targets) |
 | Git connection | **Not linked** — owner action required (see blocker below) |
-| Deployments | Two attempts from `arena/6fedf57b-attendly` (`dpl_FpfrRcHaLUnXs3aroTd4YR2wsVqN`, `dpl_4RS3ED8rPvBeiFRnSUAFRuLUP8D6`) both ended `ERROR` with `git_info_fail`. Both records were deleted. **No deployment was ever live; no production deployment occurred.** |
+| Deployments | Two early attempts ended `ERROR` with `git_info_fail` and were deleted. **`dpl_GgaeYpWKRUT7d5u6dvQkha6s2YfT` is `READY`** (`aa7dd73`, ~45s build) after the GitHub Login Connection became available. |
 | Local link | `.env.local` (gitignored) holds the public project URL and publishable key; the frontend is linked to the live Supabase project under existing RLS |
 | Supabase Auth | Additive allow-list extended (see below); `site_url` unchanged |
 | Live preview | Local `npm run start` on `0.0.0.0:3000` served through the Arena live preview |
 
-## Blocker
+## Earlier blocker — resolved
 
-Linking the repository returned:
+Linking the repository originally returned:
 
 > `Failed to link sharveshraam/Attendly. You need to add a Login Connection to your GitHub account first.`
 
-Git-source deployments then failed with:
+and Git-source deployments failed with `git_info_fail`. The owner added the
+GitHub Login Connection; a deployment from `arena/6fedf57b-attendly` with the
+numeric `repoId` then built successfully.
 
-> `Git information retrieval failed for this deployment.`
+## Current deployment
 
-**Minimum owner action:** add a GitHub Login Connection to the Vercel account
-(Vercel → Account Settings → Login Connections → GitHub), or otherwise authorise
-the GitHub integration for `sharveshraam/Attendly`. Once that exists, create a
-**preview** deployment from `arena/6fedf57b-attendly` and verify it before any
-production promotion.
+**Hosted deployment now exists.** Deployment
+`dpl_GgaeYpWKRUT7d5u6dvQkha6s2YfT` from branch `arena/6fedf57b-attendly` at
+`aa7dd7347d79bf1d263d5ca9d7df229cb3126c2c` built in ~45s and is `READY`.
+URLs: `https://attendly-web-cosmic-7aae.vercel.app`,
+`https://attendly-web-git-arena-6fedf57b-attendly-cosmic-7aae.vercel.app`,
+`https://attendly-3qy7527yx-cosmic-7aae.vercel.app`. Vercel Deployment
+Protection is on, so an unauthenticated fetch redirects to Vercel login; only
+Vercel-authenticated viewers can open it from here. Vercel labels the
+deployment `target: production` / `PROMOTED` even though it was built from the
+feature branch — no custom domain, DNS change, `main` merge or production data
+test was performed.
+
+The two public Supabase env vars were present in the build (`build.env`). The
+Supabase Auth allow-list already contains the branch and project aliases.
 
 ## Steps once authorised
 
 1. Link `sharveshraam/Attendly` to the Vercel project, or create a preview
    deployment from branch `arena/6fedf57b-attendly`.
 2. Confirm the two public env vars are present for the preview target.
-3. Verify the preview: public pages, `/login`, `/signup`, `/home` setup/login
-   behaviour, `/manifest.webmanifest`, `/sw.js`, icons, security headers and CSP.
+3. Verify the deployment: public pages, `/login`, `/signup`, `/home`
+   login redirect, `/manifest.webmanifest`, `/sw.js`, icons, security headers and
+   CSP. **Not yet done from outside Vercel** because Deployment Protection
+   requires a Vercel login; the local production build passed all these checks.
 4. **Already done (owner-approved, additive):** the redirect allow-list now
    includes the Arena preview and Vercel preview aliases, on top of the original
    localhost and mobile deep links:
@@ -59,9 +72,10 @@ production promotion.
    - `https://attendly-*.vercel.app/**`
 
    `site_url` stays `http://localhost:3000` and no other Auth setting changed.
-   `lib/auth.ts` still retries with the configured site URL when GoTrue rejects
-   a redirect. A **production** origin or production `site_url` change remains
-   gated on explicit owner approval.
+   The new `attendly-*.vercel.app` deployment URL is also covered by the wildcard
+   entry. `lib/auth.ts` still retries with the configured site URL when GoTrue
+   rejects a redirect. A **production** origin or production `site_url` change
+   remains gated on explicit owner approval.
 5. With a disposable test account, run the integration/E2E checklist in
    `docs/TESTING.md`. Never use real production data.
 6. Only after explicit approval: promote to production, add any custom domain
@@ -75,6 +89,7 @@ production promotion.
 - `package.json` declares `engines.node >=22.0.0`. Vercel's project default is
   `26.x`; no successful hosted build has been observed yet.
 - `npm run build` is the build command; `npm run start` is only for local serving.
+- Vercel built with Node `26.x` and both public Supabase env vars in ~45s.
 - `.next`, `node_modules`, `.vercel`, `.env*` and `*.tsbuildinfo` are gitignored.
 
 ## Rollback

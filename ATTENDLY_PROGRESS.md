@@ -146,6 +146,9 @@ additive; all earlier sections above are preserved verbatim._
 
 ### Deployment status
 
+> Historical record from the first implementation pass; superseded by the later
+> "Obsidian Academic + Supabase link" section below.
+
 - Vercel project `attendly-web` created with the two public Supabase env vars.
 - Two Git-source deployment attempts from this branch failed at initialization
   with `git_info_fail` and were deleted. **No deployment is live and no
@@ -227,15 +230,23 @@ additive; all earlier sections above are preserved verbatim._
   `https://attendly-web-git-arena-6fedf57b-attendly-cosmic-7aae.vercel.app/**`,
   `https://attendly-*.vercel.app/**`. A fresh `get_auth_config` confirmed
   `site_url=http://localhost:3000` and all other Auth settings unchanged.
-- Vercel project `attendly-web` still has the two public env vars and no GitHub
-  Login Connection. Hosted preview remains blocked (`git_info_fail`); **no
-  deployment is live and no production deployment occurred.** Production
-  promotion, DNS, `main` merge and production data testing remain unapproved.
+- The GitHub Login Connection is now in place. `dpl_GgaeYpWKRUT7d5u6dvQkha6s2YfT`
+  built `READY` in ~45s from `aa7dd73` with both public env vars and aliases
+  `https://attendly-web-cosmic-7aae.vercel.app`,
+  `https://attendly-web-git-arena-6fedf57b-attendly-cosmic-7aae.vercel.app` and
+  `https://attendly-3qy7527yx-cosmic-7aae.vercel.app` — all covered by the Auth
+  allow-list. Vercel Deployment Protection requires a Vercel login to open them,
+  so external hosted route/header checks remain outstanding. Vercel labels the
+  branch deployment `target: production` / `PROMOTED`; **no custom domain, DNS
+  change, `main` merge or production data test occurred.** Production promotion
+  remains unapproved.
 
 ### Verification for this milestone
 - `npm run typecheck`, `npm run lint`, `npm test` (80/80), `npm run build`,
-  `npm audit --omit=dev` (0 vulnerabilities), 27-route HTTP/header smoke,
-  legacy-accent source + bundle grep, manifest/SW/icon checks, and a fresh local
-  `/signup` render with the linked Supabase env. Browser auth round trips, PWA
-  install/offline, responsive/theme matrix and real-account E2E are **not**
-  claimed as verified.
+  `npm audit --omit=dev` (0 vulnerabilities), 31-path HTTP/header smoke
+  (public/auth/offline/manifest/SW/icons 200; anonymous app routes correctly
+  307 → `/login`), a source + built-bundle grep with zero legacy accent colour,
+  manifest/SW/PNG-pixel/token checks, and a fresh local `/signup` render with
+  the linked Supabase env. Browser auth round trips, PWA install/offline,
+  responsive/theme matrix, hosted-route checks behind Vercel Deployment
+  Protection and real-account E2E are **not** claimed as verified.

@@ -5,4 +5,10 @@ out
 .env.local
 .vercel
 .DS_Store
-
+*.tsbuildinfo
+.env.*.local
+coverage/
+playwright-report/
+test-results/
+npm-debug.log*
+.turbo/

@@ -70,3 +70,71 @@ Last updated: 2026-11-03 (Asia/Kolkata)
 - Keep secrets out of public repository files and chat. Supabase publishable keys are browser-safe by design but still must not be copied into this public handoff; service-role/database credentials are strictly private.
 - State only what was implemented and verified. Keep the current website scope and remaining work clear.
 
+
+---
+
+# Mobile app — `apps/mobile/` (native Android + iOS)
+
+Added by the mobile agent on branch `arena/7b693859-attendly`. This section is append-only; the website handoff above is preserved unchanged. The website, `supabase/migrations/`, and all other root/web files were **not** modified.
+
+## Status: feature-complete and build-ready (JS/Metro verified)
+
+A full **React Native + Expo SDK 58 + Expo Router + TypeScript** app integrating the existing Supabase backend. It is not a WebView wrapper. Attendance is owner-private; groups share **schedules only**, enforced by the existing RLS.
+
+## What was built
+
+- **Auth** — register / login / email verification / password reset / logout / session restore; tokens in a chunked `expo-secure-store` adapter (keystore/keychain).
+- **Onboarding** — semester → courses → timetable (CSV import + manual) → academic calendar → review/conflict check; optional steps skippable.
+- **Calendar** — month / week / day / agenda; academic-day classifications; recurring rules kept separate from dated sessions; revised-timetable diff/confirm.
+- **Attendance engine** — independent, unit-tested pure TS (`src/lib/attendance/engine.ts`): bunk / recovery / what-if, per-course targets, hours mode, fixed/rolling projections. Semantics: denominator = present+absent; excused conducted but not counted; unmarked ≠ absent; cancelled excluded; rescheduled original excluded / replacement counted once; 100% target unrecoverable after a miss.
+- **Dashboard, course pages, groups** (create/join via `join_group_by_invite` RPC, roles, shared events, polls), **productivity** (assignments, exams, notes, events), **analytics** (trend + per-course charts, CSV/PDF export via native share).
+- **Deterministic AI assistant** — answers from real data, no external AI, no invented numbers.
+- **Offline-first** — SQLite cache + durable outbox with version-based conflict resolution (manual keep/discard in Settings → Sync).
+- **Local notifications** — categories, quiet hours, daily summary, class/assignment reminders; permission + inbox UI.
+- **Settings** — appearance, notification preferences, sync management.
+
+## Verification (all run in this environment)
+
+| Check | Result |
+| --- | --- |
+| `tsc --noEmit` | ✅ clean (exit 0) |
+| `jest` | ✅ **67 tests / 6 suites passing** (engine 32, CSV, schedule, planner, assistant, validation) |
+| `expo export --platform android --platform ios` | ✅ both Hermes (`.hbc`) bundles produced (~5.5 MB each) |
+| `gradle` / `xcodebuild` native compile | ⚠️ **not run** — no Android SDK / Xcode in this sandbox |
+| On-device / emulator run | ⚠️ **not run** — requires a device/emulator |
+
+The Metro export proves the TS/JS bundles compile and all native-module imports resolve for both platforms. Installable `.apk`/`.aab`/`.ipa` binaries require the native toolchains or EAS (see `apps/mobile/docs/BUILD.md`). Nothing is claimed as a verified native/device build.
+
+## Backend integration (no schema changes)
+
+- Uses the existing project `gavlxbxgxdormbfhtzlo` (ap-south-1, PG17). All 19 tables RLS; private bucket `academic-documents`; 6 realtime tables; existing RPCs. Typed mirror in `src/types/database.ts`.
+- **Auth redirect allow-list** was empty. Added **additively** (user-approved): `attendly://auth/callback`, `attendly://auth/reset-password`. The list also retains `http://localhost:3000/**` (the existing web-dev origin, matching `site_url`). `site_url` (`http://localhost:3000`) and all web settings were left unchanged; nothing was removed.
+  - Note: the Supabase `update_auth_config` connector normalized a few unrelated fields to null/default as a side effect (`rate_limit_email_sent`, `sessions_inactivity_timeout`, `sessions_timebox`, `security_captcha_provider`, `sms_provider`). These are functionally equivalent (defaults, or features that are disabled: captcha off, phone auth off) and are not exposed as settable parameters by the connector. They can be re-set in the Supabase dashboard if explicit values are preferred.
+- **Proposed** backend additions (notes table, assignment `priority`, Expo push tokens, timetable OCR) are **staged only** in `apps/mobile/docs/PROPOSED_BACKEND_ADDITIONS.md` — **not applied**, not in `supabase/migrations/`.
+
+## Honest limits / pending
+
+- **Remote push is not operational** — `push_subscriptions` is web-push shaped; no Expo-token column, no backend sender, no push credentials, no device delivery test. Local notifications are fully implemented and tested. `getExpoPushToken()` is wired and surfaces readiness honestly.
+- **PDF/image timetable OCR** is not implemented (no OCR backend): CSV is parsed client-side; PDF/image uploads are stored and reviewed manually. Excel parsing deferred.
+- **Notes** are local-only (SQLite); **assignment priority** is a local overlay — both have staged migrations if server sync is later wanted.
+- Group members' `display_name` is null for non-self (RLS self-select) → UI shows "Classmate"; this is expected, not a bug.
+
+## Scope boundary honored
+
+- Only `apps/mobile/` was added. Shared edits limited to the two explicitly authorized items: this append to `ATTENDLY_PROGRESS.md`, and the one-line `"apps"` exclude in root `tsconfig.json`.
+- No web code, no migration, and no Codex-owned file was changed.
+
+## Secrets
+
+- Only the **publishable** key is used, and only in the git-ignored `apps/mobile/.env.local`. It is **not** committed (verified by secret scan). No service-role/secret key anywhere in the repo or bundle. `.env.example` ships placeholders only.
+
+## Run / build
+
+```bash
+cd apps/mobile
+npm install
+cp .env.example .env.local   # fill the two public values
+npx expo start
+```
+
+Docs: `apps/mobile/README.md` and `apps/mobile/docs/{ARCHITECTURE,BACKEND_MAPPING,BUILD,PERMISSIONS,NOTIFICATIONS,OFFLINE_SYNC,TESTING,PROPOSED_BACKEND_ADDITIONS}.md`.
